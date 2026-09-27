@@ -1,0 +1,47 @@
+{
+  "name": "yenze-studio",
+  "version": "0.2.0-beta.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server/dev.mjs",
+    "dev:ui": "vite --host 127.0.0.1 --port 3060",
+    "api": "node server/index.mjs",
+    "build": "tsc --noEmit && vite build",
+    "start": "NODE_ENV=production node server/index.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:e2e": "playwright test",
+    "mcp": "node server/mcp.mjs",
+    "import:layers": "node core/import-folder.mjs",
+    "release:source": "python3 scripts/package-source.py",
+    "build:showcase": "tsc --noEmit && vite build --mode showcase --outDir dist-showcase",
+    "preflight": "node scripts/preflight.mjs"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@fontsource-variable/dm-sans": "^5.3.0",
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "gltf-validator": "2.0.0-dev.3.10",
+    "lucide-react": "^0.468.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "sharp": "^0.35.4",
+    "stripe": "^18.5.0",
+    "three": "^0.180.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@types/three": "^0.180.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "prettier": "^3.9.9",
+    "typescript": "^5.9.0",
+    "vite": "^7.1.0"
+  },
+  "license": "AGPL-3.0-only"
+}

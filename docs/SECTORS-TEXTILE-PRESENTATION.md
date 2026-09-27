@@ -1,0 +1,19 @@
+# Sectors, textile and image-free storefronts
+
+Implemented locally, September 2026.
+
+- Creation offers twelve searchable sectors. Sector questions are editable suggestions, not specialized tax, inventory or manufacturing integrations. Edited questions survive a sector change until the user explicitly requests replacement.
+- POST /api/products accepts optional `setup` {name, industry, basePrice in cents, questions [{label, answers as comma-separated text}]}. Validation runs before assets/products are created. Invalid input cannot leave a half-created product. The same portable validator drives the wizard.
+- The `shirt-3d` template includes an optimized CC BY 4.0 GLB by Tabbuso, material colors, sizes and a `personalization` print document. Text and raster images support front/back placement, layer ordering, duplication, keyboard movement, resizing, rotation and undo/redo. The editor applies explicitly; merchant drafts still require Save/Publish.
+- Buyer print documents use reserved selection key `$print`. Evaluating prices preserves and validates this document. Saved configurations, short share URLs and order snapshots therefore retain the design. Normal products reject this key.
+- Images are rasterized in the browser to bounded PNG previews: input PNG/JPG/WebP up to 10MB; output up to 180KB per image, combined encoded image limit 600KB, up to 20 layers. SVG, HTML, remote image URLs and invalid dimensions are rejected. Public short shares are limited to 20MB of encoded selections per product as well as the existing 10,000-link cap; configuration saves are rate limited. New uploads also retain the unmodified original privately, scoped to the product. Older documents have previews only and prompt re-upload. The editor export remains a 1536 × 2048 proof; order detail additionally exports PNGs from originals at the configured physical size and 150/300 DPI, plus a portable JSON job packet. These are not PDF/X or color-managed manufacturing certifications. See PRODUCTION-WORKFLOW.md for approval, storage and output limitations.
+- The fixed included shirt uses known front/back projection zones. Versioned profiles retain compatibility with the original CC0 shirt; new templates use the detailed Tabbuso shirt. This does not automatically discover print zones on arbitrary customer GLBs, simulate cloth or change geometry with size. The generic GLB configurator remains available separately.
+- Image-free products support `presentation: {layout: "editorial" | "compact", tone: "ink" | "olive" | "plum"}`. These apply both to standalone URLs and iframe embeds. No premium paywall or payment/licensing integration was added.
+
+Tests include invalid creation rollback, sector edits, iframe/mobile forms, print document limits, direct dragging, image normalization, front/back, undo/redo, saved merchant drafts and independent-browser share roundtrips. Existing tenant isolation, immutable order snapshots and payment tests remain required. This is not an independent security audit or a guarantee of error-free production operation.
+
+## Canvas editing and clean start
+
+New shirt templates start with an empty print document. Clicking the empty design zone creates text and opens a focused on-canvas editor. Clicking an existing text edits it; dragging moves it. The contextual controls provide font, ink color, size, duplication and deletion. Enter finishes editing, Shift+Enter inserts a line break. The sidebar remains available for detailed controls.
+
+The updated local demo retires only the original `studio_text` starter copy. With `cleanStart` enabled, that known unchanged placeholder is also filtered from stale browser selections. Customer-edited text, other artwork and older manifest snapshots retain their content. Front/back projection profiles are versioned; the original CC0 profile remains supported.

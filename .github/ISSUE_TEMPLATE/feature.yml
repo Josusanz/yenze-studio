@@ -1,0 +1,20 @@
+name: Feature proposal
+description: Explain a real seller or buyer problem
+title: "[Idea] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Who is blocked, and what are they trying to sell or configure?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: What would a successful workflow look like?
+    validations:
+      required: true
+  - type: textarea
+    id: contribution
+    attributes:
+      label: Can you share a reproducible sample, help test or contribute?
