@@ -88,8 +88,8 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
     document.documentElement.lang = lang;
     document.title =
       lang === "en"
-        ? "Yenze — Your product. Their perfect version."
-        : "Yenze — Tu producto. Su versión perfecta.";
+        ? "Yenze — Product configurator builder and order management"
+        : "Yenze — Creador de configuradores y gestión de pedidos";
     document
       .querySelector('meta[name="description"]')
       ?.setAttribute(
@@ -158,7 +158,9 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
       </a>
       <div className="announcement">
         <span className="live-dot" />
-        {t("BETA ABIERTA · El configurador también puede ser tuyo.")}
+        {t(
+          "BETA ABIERTA · Software para crear configuradores y gestionar pedidos.",
+        )}
         <a href="#open-source">
           {t("Explora el proyecto")}
           <ArrowUpRight size={12} />
@@ -172,14 +174,14 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
           className={menu ? "open" : ""}
           aria-label={t("Navegación principal")}
         >
-          <a href="#how" onClick={() => setMenu(false)}>
-            {t("Cómo funciona")}
+          <a href="#product" onClick={() => setMenu(false)}>
+            {t("Qué es Yenze")}
           </a>
           <a href="#playground" onClick={() => setMenu(false)}>
             {t("Pruébalo")}
           </a>
-          <a href="#open-source" onClick={() => setMenu(false)}>
-            Open source
+          <a href="#ownership" onClick={() => setMenu(false)}>
+            {t("Disponibilidad")}
           </a>
         </nav>
         <div className="nav-actions">
@@ -217,49 +219,55 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
           <div className="hero-copy">
             <div className="m-eyebrow">
               <span />
-              {t("EL CONFIGURADOR QUE PUEDES HACER TUYO")}
+              {t("SOFTWARE PARA NEGOCIOS QUE VENDEN A MEDIDA")}
             </div>
             <h1>
-              {t("Tu producto.")}
+              {t("Crea configuradores de producto.")}
               <br />
-              {t("A su manera.")}
-              <br />
-              <em>{t("En tu propia web.")}</em>
+              <em>{t("Gestiona cada pedido.")}</em>
             </h1>
             <p>
               {t(
-                "Deja que tus clientes elijan acabados, añadan su diseño y vean el resultado. Recibe la configuración exacta para presupuestar o preparar cada pedido.",
+                "Yenze es un software para crear configuradores 2D y 3D e incluirlos en tu web. Tus clientes eligen materiales, medidas o diseños; tú gestionas sus configuraciones, presupuestos y pedidos desde un panel.",
               )}
             </p>
             <div className="hero-ctas">
-              <a className="m-button dark" href={start}>
+              <a
+                className="m-button dark"
+                href={creatorAvailable ? start : "#playground"}
+              >
                 {!creatorAvailable
-                  ? t("Crear con Yenze · instalar")
+                  ? t("Probar una demo")
                   : t("Crear mi primer configurador")}{" "}
                 <ArrowUpRight size={17} />
               </a>
-              <a className="m-link" href="#playground">
-                {t("Verlo en acción")}
+              <a
+                className="m-link"
+                href={creatorAvailable ? "#playground" : start}
+              >
+                {creatorAvailable
+                  ? t("Verlo en acción")
+                  : t("Instalar el creador")}
                 <ArrowRight size={16} />
               </a>
             </div>
             <div className="hero-note">
               <Check size={13} />
-              {t("Sin código para empezar")}
+              {t("Editor visual + panel de gestión")}
               <span />
-              {t("2D, 3D o sin imágenes")}
+              {t("Beta de código abierto")}
             </div>
             {!creatorAvailable && (
               <small className="beta-context">
                 {t(
-                  "Demo interactiva sin registro. El editor completo se instala desde GitHub.",
+                  "Disponible hoy: instalación propia desde GitHub. Esta web es una demo; el creador alojado todavía no está disponible.",
                 )}
               </small>
             )}
           </div>
           <div className="hero-product">
             <div className="product-overline">
-              <span>{t("POSIBILIDAD N.º 001")}</span>
+              <span>{t("VISTA DEL CLIENTE · DEMO 2D")}</span>
               <span>
                 {t("Diseña tu versión")}
                 <Plus size={13} />
@@ -286,11 +294,11 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
             </div>
             <div className="hero-product-controls">
               <div>
-                <small>{t("Butaca Nube · ejemplo 2D")}</small>
+                <small>{t("Ejemplo de producto configurable")}</small>
                 <h2>
                   {fabric === "cream"
-                    ? t("Un poco de calma.")
-                    : t("Un poco más de ti.")}
+                    ? t("El cliente elige el acabado")
+                    : t("El cliente elige el acabado")}
                 </h2>
               </div>
               <div className="fabric-control">
@@ -325,6 +333,98 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
               <Check size={14} />
             </div>
           </div>
+        </section>
+        <section
+          className="product-explainer"
+          id="product"
+          aria-labelledby="product-heading"
+        >
+          <div
+            className="product-journey"
+            aria-label={t("DEL PRODUCTO AL PEDIDO")}
+          >
+            <span>
+              <b>01</b>
+              {t("Tú defines las opciones")}
+            </span>
+            <ArrowRight size={17} />
+            <span>
+              <b>02</b>
+              {t("Tu cliente configura")}
+            </span>
+            <ArrowRight size={17} />
+            <span>
+              <b>03</b>
+              {t("Tú recibes la selección exacta")}
+            </span>
+          </div>
+          <div className="section-intro">
+            <div>
+              <span className="m-eyebrow">YENZE / STUDIO + CONNECT</span>
+              <h2 id="product-heading">{t("¿Qué necesitas para empezar?")}</h2>
+            </div>
+            <p>
+              {t(
+                "Un creador si empiezas de cero. Un backend si ya tienes la experiencia visual. Dos caminos hacia la misma gestión.",
+              )}
+            </p>
+          </div>
+          <div className="product-offers">
+            <article>
+              <span className="offer-status">
+                {t("DISPONIBLE · BETA AUTOALOJADA")}
+              </span>
+              <span className="offer-name">Yenze Studio</span>
+              <h3>{t("Necesito crear un configurador")}</h3>
+              <p>
+                {t(
+                  "Crea la experiencia visual y gestiona lo que viene después. Para negocios que quieren personalizar productos o preparar presupuestos con opciones.",
+                )}
+              </p>
+              <ul>
+                <li>{t("Editor con imágenes, capas y modelos 3D")}</li>
+                <li>{t("Acabados, medidas, extras y reglas")}</li>
+                <li>{t("Clientes, configuraciones guardadas y pedidos")}</li>
+              </ul>
+              <a className="m-button dark" href={start}>
+                {creatorAvailable
+                  ? t("Crear mi primer configurador")
+                  : t("Instalar el creador")}
+                <ArrowUpRight size={16} />
+              </a>
+            </article>
+            <article className="offer-planned">
+              <span className="offer-status">
+                {t("EN DESARROLLO · INTEGRACIÓN EXTERNA")}
+              </span>
+              <span className="offer-name">Yenze Connect</span>
+              <h3>{t("Ya tengo un configurador")}</h3>
+              <p>
+                {t(
+                  "Conserva el diseño que ya has construido. Estamos preparando la conexión con el backend de Yenze para añadir clientes, presupuestos y pedidos sin rehacer la parte visual.",
+                )}
+              </p>
+              <ul>
+                <li>{t("Pensado para agencias y configuradores a medida")}</li>
+                <li>
+                  {t("Conexión mediante un adaptador de opciones y precios")}
+                </li>
+                <li>{t("El conector universal aún no está disponible")}</li>
+              </ul>
+              <a
+                className="m-link"
+                href={repo + "/blob/main/docs/PRODUCT-STRATEGY.md"}
+              >
+                {t("Ver el alcance de Connect")}
+                <ArrowUpRight size={16} />
+              </a>
+            </article>
+          </div>
+          <p className="product-availability">
+            {t(
+              "Código abierto, sin cuota de licencia del motor. El alojamiento y los servicios externos corren por tu cuenta.",
+            )}
+          </p>
         </section>
         <div className="capability-strip">
           <span>{t("UNA BASE. MUCHAS FORMAS DE CREAR.")}</span>

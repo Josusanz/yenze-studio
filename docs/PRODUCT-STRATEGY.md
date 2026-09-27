@@ -34,3 +34,15 @@ Success is one real end-to-end adapter, not a claim of compatibility with every 
 Two explicit paths: “Build a configurator” and “Connect my existing configurator”. One sign-in and one merchant workspace. Explain which offer creates the visual experience and which provides its operations. Retain the current source-template storefront as an additional entry point; do not replace its one-time purchases with an implied mandatory subscription.
 
 Do not split repositories until independently versioned packages or actual team ownership require it. A later monorepo can contain builder, backend, SDK and examples while preserving a shared domain model.
+
+## Proposed hosted free tier (not implemented or available yet)
+
+Make online creation the main onboarding experience when a persistent hosted backend is ready. A useful free tier should let a business publish one configurator, embed it in one website and receive a limited number of quote requests, with visible Yenze attribution. Start with explicit storage and usage limits; determine numerical quotas after measuring actual costs. Uploading existing images/GLB can be included; provider-based AI generation needs separate credits, never an unlimited promise.
+
+Paid hosted plans can increase active configurators, storage and usage, remove attribution, add team permissions and provide business integrations/support. Keep a successful small business's existing configurations usable at its current plan: explain any cap before publishing and never silently discard a customer request. Templates and assisted setup can remain separate purchases.
+
+Free hosted use and open-source self-hosting serve different audiences. Source availability remains a trust, portability and contribution benefit; it should not be the first installation requirement for a nontechnical customer. Keep one product account and two entry paths (Studio / Connect), with hosted plans applied to their shared workspace rather than duplicate subscriptions.
+
+Embedding is distinct from native commerce: Wix provides an HTML/site embed, and WordPress supports Custom HTML subject to the site's permissions and hosting restrictions. Cart, tax, stock and order synchronization require validated platform-specific adapters. Prioritize one complete integration rather than claiming all platforms are native integrations.
+
+References: https://support.wix.com/en/article/wix-editor-embedding-a-site-or-a-widget and https://wordpress.org/documentation/article/custom-html/.

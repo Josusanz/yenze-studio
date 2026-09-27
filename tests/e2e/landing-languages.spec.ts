@@ -2,7 +2,10 @@ import { test, expect } from '@playwright/test';
 test('landing switches between English and Spanish without losing the section', async ({page}) => {
   await page.goto('/?page=home&lang=en#playground');
   await expect(page.locator('html')).toHaveAttribute('lang','en');
-  await expect(page.locator('.hero h1')).toContainText('Your product.');
+  await expect(page.locator('.hero h1')).toContainText('Build product configurators.');
+  await expect(page.locator('.product-offers')).toContainText('Yenze Studio');
+  await expect(page.locator('.product-offers')).toContainText('Yenze Connect');
+  await expect(page.locator('.offer-planned')).toContainText('IN DEVELOPMENT');
   await expect(page.getByRole('button',{name:'Midnight blue finish',exact:true})).toBeAttached();
   await page.getByLabel('Example table width').fill('100');
   await expect(page.locator('.range-label')).toContainText('100 cm');
@@ -12,7 +15,7 @@ test('landing switches between English and Spanish without losing the section', 
   await page.getByLabel('Language',{exact:true}).selectOption('es');
   await expect(page.locator('html')).toHaveAttribute('lang','es');
   expect(new URL(page.url()).hash).toBe('#playground');
-  await expect(page.locator('.hero h1')).toContainText('Tu producto.');
+  await expect(page.locator('.hero h1')).toContainText('Crea configuradores de producto.');
   await page.getByLabel('Idioma',{exact:true}).selectOption('en');
   await page.goto('/?page=home');
   await expect(page.locator('html')).toHaveAttribute('lang','en');
@@ -21,7 +24,7 @@ test('landing switches between English and Spanish without losing the section', 
   await expect(page.getByLabel('Language',{exact:true})).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.screenshot({path:'artifacts/landing-english-mobile.png'});
-  await page.getByRole('link',{name:'Create my first configurator',exact:true}).click();
+  await page.locator('.hero').getByRole('link',{name:'Create my first configurator',exact:true}).click();
   expect(new URL(page.url()).searchParams.get('lang')).toBe('en');
   await expect(page.getByLabel('Nombre del negocio')).toBeVisible();
 });

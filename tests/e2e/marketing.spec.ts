@@ -5,7 +5,7 @@ test("Marketing demo is interactive, responsive and leads directly into creation
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/?page=home&lang=es");
-  await expect(page.locator(".hero h1")).toContainText("En tu propia web.");
+  await expect(page.locator(".hero h1")).toContainText("Crea configuradores de producto.");
   await page
     .getByRole("button", { name: "Acabado azul noche", exact: true })
     .click();
@@ -55,14 +55,14 @@ test("Marketing demo is interactive, responsive and leads directly into creation
   await expect(
     page
       .getByRole("navigation")
-      .getByRole("link", { name: "Cómo funciona", exact: true }),
+      .getByRole("link", { name: "Qué es Yenze", exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Cerrar menú", exact: true }).click();
   await page.screenshot({
     path: "artifacts/marketing-mobile.png",
     fullPage: true,
   });
-  await page
+  await page.locator(".hero")
     .getByRole("link", { name: "Crear mi primer configurador", exact: true })
     .click();
   await expect(page.getByLabel("Nombre del negocio")).toBeVisible();
