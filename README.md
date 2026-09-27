@@ -1,5 +1,7 @@
 # Yenze Studio
 
+[Live demo](https://yenze-studio-open-beta.vercel.app) · [Download beta](https://github.com/Josusanz/yenze-studio/releases)
+
 **Make it theirs. Keep it yours.**
 
 An open-source product configurator builder for 2D images, layered artwork, GLB models and services that need no images at all. Build choices, show a live preview, collect requests and keep the exact configuration attached to each order.

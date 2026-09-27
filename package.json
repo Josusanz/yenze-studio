@@ -14,7 +14,7 @@
     "mcp": "node server/mcp.mjs",
     "import:layers": "node core/import-folder.mjs",
     "release:source": "python3 scripts/package-source.py",
-    "build:showcase": "tsc --noEmit && vite build --mode showcase --outDir dist-showcase",
+    "build:showcase": "tsc --noEmit && vite build --mode showcase --outDir dist-showcase && node scripts/prepare-showcase.mjs",
     "preflight": "node scripts/preflight.mjs"
   },
   "engines": {

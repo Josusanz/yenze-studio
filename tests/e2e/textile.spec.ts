@@ -27,7 +27,8 @@ test("Textile design supports text, drag, back, image, undo and durable shared d
   await page.goto(p.publicPath);
   await page.getByRole("button", { name: /Diseñar mi camiseta/ }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
-  await expect(page.locator(".print-region")).toBeVisible();
+  // Cold Vite transforms and the GLB load take longer on shared CI runners.
+  await expect(page.locator(".print-region")).toBeVisible({ timeout: 20000 });
   await expect(page.locator(".textile-layer-list button")).toHaveCount(0);
   await page.getByRole("button", { name: /Tu idea empieza aquí/ }).click();
   await expect(

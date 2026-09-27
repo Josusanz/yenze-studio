@@ -31,7 +31,7 @@ Condiciones para anunciar servicio gestionado: despliegue persistente, pagos/cor
 | 16:00 | Publicar explicación técnica en el canal donde Josu ya participa | Qué está implementado, decisiones y límites; respetar reglas de cada comunidad |
 | 18:00 | Evaluar primeras instalaciones | Resolver un bloqueo antes de añadir otra funcionalidad |
 
-Los textos están en COPY.md. Este plan no publica mensajes ni contacta a personas automáticamente.
+Los textos están en COPY.md. La grabación breve sin edición de la demo está en public/launch/demo.webm; el guion largo requiere una grabación adicional. Este plan no publica mensajes ni contacta a personas automáticamente.
 
 ## Primeras dos semanas
 

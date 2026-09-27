@@ -1,6 +1,6 @@
 # Textos preparados — requieren revisión/publicación de Josu
 
-Reemplazar DEMO_URL por la URL pública verificada antes de publicar. No se han enviado estos mensajes.
+Reemplazar https://yenze-studio-open-beta.vercel.app por la URL pública verificada antes de publicar. No se han enviado estos mensajes.
 
 ## X — primera publicación
 
@@ -18,7 +18,7 @@ Código abierto y autoalojable. Vídeo real abajo 👇
 
 No está terminado para todos los casos: WooCommerce es experimental; el hosting gestionado y otros carritos siguen pendientes. Prefiero enseñarlo con esos límites claros.
 
-Demo: DEMO_URL
+Demo: https://yenze-studio-open-beta.vercel.app
 Código: https://github.com/Josusanz/yenze-studio
 
 Me interesa especialmente saber en qué paso te atascas creando tu primer configurador. Si lo pruebas, cuéntame qué vendes y qué te ha faltado.
@@ -31,7 +31,7 @@ I've been building product configurators and wanted to make the builder itself o
 
 Yenze supports image variants, 2D layers, self-contained GLB models, primitive scenes and service quotes without images. It includes nested choices, pricing rules, saved configurations and quote/order workflows. The apparel editor preserves original uploads and ties customer proof approval to an immutable order snapshot.
 
-Demo: DEMO_URL
+Demo: https://yenze-studio-open-beta.vercel.app
 Source (AGPL-3.0): https://github.com/Josusanz/yenze-studio
 
 It is an early self-hosted beta. The editor UI is currently Spanish. The demo needs no account; the full editor runs locally with Node 24. This is not a CAD/manufacturing engine, and the WooCommerce adapter still needs staging validation. I'm looking for feedback on whether a first-time seller can build something useful without understanding configurator terminology.
@@ -55,7 +55,7 @@ La primera versión se centra en dos recorridos: personalización textil y propu
 
 Busco feedback de talleres, estudios y agencias que quieran probar la creación de un configurador con un producto real. La prueba es de aprendizaje, no una promesa de despliegue comercial inmediato.
 
-DEMO_URL
+https://yenze-studio-open-beta.vercel.app
 https://github.com/Josusanz/yenze-studio
 
 ## Guion de vídeo (75 segundos)
