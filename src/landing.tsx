@@ -1,3 +1,4 @@
+import HeroConfigurator from "./hero-configurator";
 import { resizeDemoTable } from "../core/demo-table.mjs";
 import { t, getLanguage, LanguageSelect } from "./i18n";
 import { useState, useEffect, lazy, Suspense } from "react";
@@ -77,8 +78,7 @@ const euro = (v: number) =>
     maximumFractionDigits: 0,
   }).format(v);
 export default function Landing({ loggedIn = false, standalone = false }: any) {
-  const [fabric, setFabric] = useState("cream"),
-    [menu, setMenu] = useState(false),
+  const [menu, setMenu] = useState(false),
     [finish, setFinish] = useState("oak"),
     [width, setWidth] = useState(150),
     [copied, setCopied] = useState(false),
@@ -265,74 +265,7 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
               </small>
             )}
           </div>
-          <div className="hero-product">
-            <div className="product-overline">
-              <span>{t("VISTA DEL CLIENTE · DEMO 2D")}</span>
-              <span>
-                {t("Diseña tu versión")}
-                <Plus size={13} />
-              </span>
-            </div>
-            <img
-              className="hero-photo"
-              src={
-                fabric === "cream"
-                  ? "/brand/lounge-original.png"
-                  : "/brand/lounge-blue.png"
-              }
-              alt={
-                t("Butaca y reposapiés de bouclé ") +
-                (fabric === "cream" ? t("marfil") : t("azul noche"))
-              }
-              width="1536"
-              height="1024"
-              fetchPriority="high"
-            />
-            <div className="product-drag-note">
-              <MousePointer2 size={13} />
-              {t("Prueba otro acabado")}
-            </div>
-            <div className="hero-product-controls">
-              <div>
-                <small>{t("Ejemplo de producto configurable")}</small>
-                <h2>
-                  {fabric === "cream"
-                    ? t("El cliente elige el acabado")
-                    : t("El cliente elige el acabado")}
-                </h2>
-              </div>
-              <div className="fabric-control">
-                <button
-                  aria-label={t("Acabado marfil")}
-                  aria-pressed={fabric === "cream"}
-                  className={fabric === "cream" ? "active" : ""}
-                  onClick={() => setFabric("cream")}
-                  style={{ background: "#e4dfd4" }}
-                >
-                  {fabric === "cream" && <Check size={16} />}
-                </button>
-                <button
-                  aria-label={t("Acabado azul noche")}
-                  aria-pressed={fabric === "blue"}
-                  className={fabric === "blue" ? "active" : ""}
-                  onClick={() => setFabric("blue")}
-                  style={{ background: "#354f65", color: "white" }}
-                >
-                  {fabric === "blue" && <Check size={16} />}
-                </button>
-              </div>
-            </div>
-            <div className="floating-spec">
-              <i />
-              <span>
-                {fabric === "cream"
-                  ? t("Bouclé marfil")
-                  : t("Bouclé azul noche")}
-                <small>{t("Tu elección, al instante")}</small>
-              </span>
-              <Check size={14} />
-            </div>
-          </div>
+          <HeroConfigurator />
         </section>
         <section
           className="product-explainer"

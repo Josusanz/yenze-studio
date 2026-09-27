@@ -2,26 +2,19 @@ import { test, expect } from "@playwright/test";
 test("Marketing demo is interactive, responsive and leads directly into creation", async ({
   page,
 }) => {
+  test.setTimeout(120000);
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/?page=home&lang=es");
   await expect(page.locator(".hero h1")).toContainText("Crea configuradores de producto.");
-  await page
-    .getByRole("button", { name: "Acabado azul noche", exact: true })
-    .click();
-  await expect(page.locator(".hero-photo")).toHaveAttribute(
-    "src",
-    "/brand/lounge-blue.png",
-  );
-  await expect
-    .poll(() =>
-      page
-        .locator(".hero-photo")
-        .evaluate(
-          (img: HTMLImageElement) => img.complete && img.naturalWidth > 0,
-        ),
-    )
-    .toBeTruthy();
+  await expect(page.locator(".hero-configurator .model-preview")).toHaveAttribute("data-model-loaded", "true", { timeout: 20000 });
+  await page.getByRole("button", { name: "Azul noche", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Azul noche", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await page.getByLabel("Tu texto en la camiseta", {exact:true}).fill("HECHO POR MI");
+  await page.getByRole("button", { name: "Espalda", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Espalda", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Frontal", exact: true }).click();
+  await page.screenshot({path:"artifacts/hero-shirt-desktop.png"});
   await page.screenshot({
     path: "artifacts/marketing-desktop.png",
     fullPage: true,

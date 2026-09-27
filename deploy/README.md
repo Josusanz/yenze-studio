@@ -21,7 +21,7 @@ Docker Compose is a deployment recipe, not evidence of a successful deployment. 
 
 The landing supports `VITE_CREATOR_ORIGIN=https://YOUR-CREATOR-HOST`. Build the showcase with this variable and its primary buttons lead to registration, sign-in and the creator, preserving the selected language. Never point this at a host until `/api/health`, account creation, saving and a restart persistence check pass. Without a configured host it accurately links to installation, not a fake online account page.
 
-`render.yaml` is an optional single-instance Docker + persistent disk recipe. Import the GitHub repository into Render, review its paid hosting/storage price and set `APP_ORIGIN` to the exact HTTPS URL assigned to the service. No provider resources have been purchased or deployed by adding this file. Other persistent Docker hosts work with the existing Compose recipe.
+`render.yaml` is an optional single-instance Docker + persistent disk recipe. Import the GitHub repository into Render, review its paid hosting/storage price The blueprint sets `APP_ORIGIN` from the HTTPS URL assigned by Render, so the first deployment does not need a manually guessed hostname. If you add a custom domain later, update `APP_ORIGIN` to that exact HTTPS origin. No provider resources have been purchased or deployed by adding this file. Other persistent Docker hosts work with the existing Compose recipe.
 
 Provider references: https://render.com/docs/blueprint-spec and https://render.com/docs/disks.
 

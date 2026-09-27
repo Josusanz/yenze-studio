@@ -9,7 +9,14 @@ import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.j
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { evaluate, effectOf } from "../core/layers.mjs";
-export default function Model({ m, s, onPick, printSide, onPrintRegion }: any) {
+export default function Model({
+  m,
+  s,
+  onPick,
+  printSide,
+  onPrintRegion,
+  modelUrl,
+}: any) {
   const profile =
     shirtProfiles[m.personalization?.model as keyof typeof shirtProfiles];
   const cameraState = useRef<any>(null),
@@ -148,7 +155,7 @@ export default function Model({ m, s, onPick, printSide, onPrintRegion }: any) {
       setLoaded((v) => v + 1);
     } else
       new GLTFLoader().load(
-        "/api/assets/" + m.model,
+        modelUrl || "/api/assets/" + m.model,
         (g) => {
           if (dead) {
             dispose(g.scene);
@@ -277,7 +284,7 @@ export default function Model({ m, s, onPick, printSide, onPrintRegion }: any) {
       root.current = null;
       fit.current = null;
     };
-  }, [m.kind, m.model]);
+  }, [m.kind, m.model, modelUrl]);
   useEffect(() => {
     if (m.kind !== "scene-3d" || !root.current) return;
     for (const child of [...root.current.children]) {
@@ -450,7 +457,11 @@ export default function Model({ m, s, onPick, printSide, onPrintRegion }: any) {
     };
   }, [s?.$print, m.personalization?.design, loaded]);
   return (
-    <div className="model-preview" ref={host}>
+    <div
+      className="model-preview"
+      ref={host}
+      data-model-loaded={loaded > 0 ? "true" : "false"}
+    >
       {(error ||
         (m.kind === "model-3d" && !m.model) ||
         (m.kind === "scene-3d" && !m.objects?.length)) && (

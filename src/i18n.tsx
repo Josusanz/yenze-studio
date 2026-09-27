@@ -15,25 +15,39 @@ export const t = (text: string): string =>
     : text;
 export function LanguageSelect() {
   const lang = getLanguage();
+  const change = (next: Language) => {
+    if (next === lang) return;
+    try {
+      localStorage.setItem("yenze-language", next);
+    } catch {}
+    const url = new URL(location.href);
+    url.searchParams.set("lang", next);
+    location.assign(url.href);
+  };
   return (
-    <label className="language-select">
-      <span className="sr-only">{lang === "en" ? "Language" : "Idioma"}</span>
-      <select
-        aria-label={lang === "en" ? "Language" : "Idioma"}
-        value={lang}
-        onChange={(event) => {
-          const next = event.target.value;
-          try {
-            localStorage.setItem("yenze-language", next);
-          } catch {}
-          const url = new URL(location.href);
-          url.searchParams.set("lang", next);
-          location.assign(url.href);
-        }}
+    <div
+      className="language-toggle"
+      role="group"
+      aria-label={lang === "en" ? "Language" : "Idioma"}
+    >
+      <button
+        type="button"
+        lang="es"
+        aria-label="Español"
+        aria-pressed={lang === "es"}
+        onClick={() => change("es")}
       >
-        <option value="en">EN</option>
-        <option value="es">ES</option>
-      </select>
-    </label>
+        ES
+      </button>
+      <button
+        type="button"
+        lang="en"
+        aria-label="English"
+        aria-pressed={lang === "en"}
+        onClick={() => change("en")}
+      >
+        EN
+      </button>
+    </div>
   );
 }

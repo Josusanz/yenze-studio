@@ -14,7 +14,10 @@ services:
       sizeGB: 1
     envVars:
       - key: APP_ORIGIN
-        sync: false
+        fromService:
+          type: web
+          name: yenze-studio-backend
+          envVarKey: RENDER_EXTERNAL_URL
       - key: YENZE_DATA_DIR
         value: /app/data
       - key: HOST

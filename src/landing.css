@@ -1835,3 +1835,220 @@
     font-size: 43px;
   }
 }
+
+.language-toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid #dce3d9;
+  border-radius: 8px;
+  background: #f1f3ed;
+  flex-shrink: 0;
+}
+.language-toggle button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #718174;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.language-toggle button[aria-pressed="true"] {
+  background: #fff;
+  color: #253d35;
+  box-shadow: 0 1px 4px #203e3214;
+}
+.language-toggle button:hover {
+  color: #253d35;
+  background: #fff9;
+}
+.hero-configurator {
+  min-width: 0;
+  border: 1px solid #dfe5db;
+  border-radius: 20px;
+  background: #f0f2ec;
+  overflow: hidden;
+  box-shadow: 0 22px 65px #344f3610;
+}
+.hero-configurator-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 19px 22px 0;
+  font-size: 9px;
+  letter-spacing: 0.09em;
+  color: #72816d;
+}
+.hero-configurator-head > span:last-child {
+  margin-left: auto;
+  font-size: 8px;
+}
+.hero-shirt-stage {
+  position: relative;
+  height: 365px;
+}
+.hero-shirt-stage .model-preview {
+  height: 100%;
+  min-height: 0;
+  background: transparent;
+}
+.hero-shirt-stage canvas {
+  display: block;
+  touch-action: none;
+}
+.hero-model-loading {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: #6e8275;
+  font-size: 13px;
+}
+.hero-view-switch {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  white-space: nowrap;
+  gap: 3px;
+  padding: 4px;
+  border: 1px solid #dce3d9;
+  border-radius: 999px;
+  background: #ffffffec;
+}
+.hero-view-switch button {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  padding: 9px 12px;
+  color: #637267;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+.hero-view-switch button[aria-pressed="true"] {
+  background: #293f35;
+  color: white;
+}
+.hero-shirt-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 10px;
+  color: #71836f;
+  pointer-events: none;
+}
+.hero-shirt-options {
+  margin: 8px 18px 0;
+  padding: 17px 20px 12px;
+  border: 1px solid #e0e6db;
+  border-radius: 13px;
+  background: #fff;
+}
+.hero-shirt-color-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.hero-shirt-color-row > span {
+  font-size: 11px;
+  color: #7a887a;
+}
+.hero-shirt-color-row strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #253d35;
+}
+.hero-shirt-color-row [role="group"] {
+  display: flex;
+  gap: 10px;
+}
+.hero-shirt-color-row button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #0001;
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+}
+.hero-shirt-color-row button[aria-pressed="true"] {
+  outline: 1px solid #7c9274;
+  outline-offset: 3px;
+}
+.hero-text-input {
+  display: block;
+  margin-top: 16px;
+}
+.hero-text-input > span {
+  display: flex;
+  justify-content: space-between;
+  color: #526450;
+  font-size: 11px;
+  margin-bottom: 7px;
+}
+.hero-text-input small {
+  color: #85917f;
+}
+.hero-text-input input {
+  width: 100%;
+  border: 1px solid #dbe2d4;
+  border-radius: 7px;
+  padding: 10px 12px;
+  background: #fafbf8;
+  font: inherit;
+  color: #293f35;
+  font-size: 13px;
+}
+.hero-shirt-options > p {
+  font-size: 10px;
+  line-height: 1.5;
+  margin: 10px 0 0;
+}
+.hero-model-credit {
+  display: block;
+  padding: 10px 20px;
+  font-size: 8px;
+  color: #7f8b7c;
+  text-align: right;
+}
+.hero-model-credit a {
+  text-decoration: underline;
+}
+@media (max-width: 700px) {
+  .hero-shirt-stage {
+    height: 330px;
+  }
+  .hero-configurator-head {
+    padding: 15px 16px 0;
+    font-size: 8px;
+  }
+  .hero-configurator-head > span:last-child {
+    font-size: 7px;
+  }
+  .hero-shirt-options {
+    margin: 8px 10px 0;
+    padding: 15px;
+  }
+  .language-toggle button {
+    width: 30px;
+    min-height: 34px;
+  }
+}
