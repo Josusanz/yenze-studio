@@ -1,0 +1,23 @@
+# Optional deployment recipe. Applying it creates paid hosting and persistent storage.
+# Review the provider's current price before applying. No resources are created by this file alone.
+services:
+  - type: web
+    name: yenze-studio-backend
+    runtime: docker
+    plan: 0.5c-512mb
+    region: frankfurt
+    healthCheckPath: /api/health
+    numInstances: 1
+    disk:
+      name: studio-data
+      mountPath: /app/data
+      sizeGB: 1
+    envVars:
+      - key: APP_ORIGIN
+        sync: false
+      - key: YENZE_DATA_DIR
+        value: /app/data
+      - key: HOST
+        value: 0.0.0.0
+      - key: NODE_ENV
+        value: production

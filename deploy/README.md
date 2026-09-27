@@ -16,3 +16,13 @@ Docker Compose is a deployment recipe, not evidence of a successful deployment. 
 ## Static showcase
 
 `npm run build:showcase` outputs `dist-showcase`. Deploy that folder to a static host. It shows the landing and interactive examples, with installation links to GitHub. It cannot run the editor, store uploads or process orders. Do not present a static showcase URL as the hosted SaaS.
+
+## Connect the public landing to the creator
+
+The landing supports `VITE_CREATOR_ORIGIN=https://YOUR-CREATOR-HOST`. Build the showcase with this variable and its primary buttons lead to registration, sign-in and the creator, preserving the selected language. Never point this at a host until `/api/health`, account creation, saving and a restart persistence check pass. Without a configured host it accurately links to installation, not a fake online account page.
+
+`render.yaml` is an optional single-instance Docker + persistent disk recipe. Import the GitHub repository into Render, review its paid hosting/storage price and set `APP_ORIGIN` to the exact HTTPS URL assigned to the service. No provider resources have been purchased or deployed by adding this file. Other persistent Docker hosts work with the existing Compose recipe.
+
+Provider references: https://render.com/docs/blueprint-spec and https://render.com/docs/disks.
+
+The landing is available in English and Spanish. The builder and business portal currently remain Spanish; translating the marketing site does not translate user-created product content.

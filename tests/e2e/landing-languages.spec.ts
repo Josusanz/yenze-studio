@@ -1,0 +1,27 @@
+import { test, expect } from '@playwright/test';
+test('landing switches between English and Spanish without losing the section', async ({page}) => {
+  await page.goto('/?page=home&lang=en#playground');
+  await expect(page.locator('html')).toHaveAttribute('lang','en');
+  await expect(page.locator('.hero h1')).toContainText('Your product.');
+  await expect(page.getByRole('button',{name:'Midnight blue finish',exact:true})).toBeAttached();
+  await page.getByLabel('Example table width').fill('100');
+  await expect(page.locator('.range-label')).toContainText('100 cm');
+  await page.getByLabel('Example table width').fill('200');
+  await page.getByRole('button',{name:'Can I use it without images?',exact:true}).click();
+  await expect(page.locator('#faq-1')).toContainText('Yes.');
+  await page.getByLabel('Language',{exact:true}).selectOption('es');
+  await expect(page.locator('html')).toHaveAttribute('lang','es');
+  expect(new URL(page.url()).hash).toBe('#playground');
+  await expect(page.locator('.hero h1')).toContainText('Tu producto.');
+  await page.getByLabel('Idioma',{exact:true}).selectOption('en');
+  await page.goto('/?page=home');
+  await expect(page.locator('html')).toHaveAttribute('lang','en');
+  await page.setViewportSize({width:390,height:844});
+  await page.evaluate(()=>scrollTo(0,0));
+  await expect(page.getByLabel('Language',{exact:true})).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:'artifacts/landing-english-mobile.png'});
+  await page.getByRole('link',{name:'Create my first configurator',exact:true}).click();
+  expect(new URL(page.url()).searchParams.get('lang')).toBe('en');
+  await expect(page.getByLabel('Nombre del negocio')).toBeVisible();
+});

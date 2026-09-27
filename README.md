@@ -32,7 +32,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Open **http://localhost:3060**. Create an account with a business name, choose **Crear configurador**, define the customer's choices and publish a quote-based example. The current editor UI is Spanish. There are no default passwords or preloaded customer accounts.
+Open **http://localhost:3060**. Create an account with a business name, choose **Crear configurador**, define the customer's choices and publish a quote-based example. The landing supports English and Spanish; the current editor UI is Spanish. There are no default passwords or preloaded customer accounts.
 
 Data and uploaded assets are stored in `data/studio.sqlite`. Keep this directory private and persistent. Never commit it.
 

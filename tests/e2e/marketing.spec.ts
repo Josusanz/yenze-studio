@@ -4,8 +4,8 @@ test("Marketing demo is interactive, responsive and leads directly into creation
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/?page=home");
-  await expect(page.locator(".hero h1")).toContainText("Ellos lo hacen suyo.");
+  await page.goto("/?page=home&lang=es");
+  await expect(page.locator(".hero h1")).toContainText("En tu propia web.");
   await page
     .getByRole("button", { name: "Acabado azul noche", exact: true })
     .click();

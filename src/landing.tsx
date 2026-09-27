@@ -1,4 +1,6 @@
-import { useState, lazy, Suspense } from "react";
+import { resizeDemoTable } from "../core/demo-table.mjs";
+import { t, getLanguage, LanguageSelect } from "./i18n";
+import { useState, useEffect, lazy, Suspense } from "react";
 import {
   ArrowUpRight,
   ArrowRight,
@@ -23,7 +25,7 @@ const Model = lazy(() => import("./model"));
 const demo: any = {
   schemaVersion: 1,
   kind: "scene-3d",
-  name: "Mesa Forma",
+  name: t("Mesa Forma"),
   currency: "EUR",
   basePrice: 24000,
   canvas: { width: 1000, height: 850 },
@@ -32,7 +34,7 @@ const demo: any = {
   objects: [
     {
       id: "top",
-      name: "Tablero",
+      name: t("Tablero"),
       type: "box",
       color: "#c8ad83",
       size: [1.5, 0.09, 0.8],
@@ -42,11 +44,11 @@ const demo: any = {
     ...[-0.62, 0.62].flatMap((x, i) =>
       [-0.27, 0.27].map((z, j) => ({
         id: "leg_" + i + j,
-        name: "Pata",
+        name: t("Pata"),
         type: "cylinder",
         color: "#394b55",
-        size: [0.07, 0.72, 0.07],
-        position: [x, 0.36, z],
+        size: [0.07, 0.73, 0.07],
+        position: [x, 0.365, z],
         rotation: 0,
       })),
     ),
@@ -54,22 +56,22 @@ const demo: any = {
   groups: [
     {
       id: "top",
-      label: "Acabado",
+      label: t("Acabado"),
       effect: "material",
       material: "top",
       order: 0,
       required: true,
       default: "oak",
       options: [
-        { id: "oak", label: "Roble", color: "#c8ad83", priceDelta: 0 },
-        { id: "blue", label: "Azul", color: "#36556b", priceDelta: 2000 },
-        { id: "clay", label: "Arcilla", color: "#b27862", priceDelta: 2000 },
+        { id: "oak", label: t("Roble"), color: "#c8ad83", priceDelta: 0 },
+        { id: "blue", label: t("Azul"), color: "#36556b", priceDelta: 2000 },
+        { id: "clay", label: t("Arcilla"), color: "#b27862", priceDelta: 2000 },
       ],
     },
   ],
 };
 const euro = (v: number) =>
-  new Intl.NumberFormat("es-ES", {
+  new Intl.NumberFormat(getLanguage() === "en" ? "en-GB" : "es-ES", {
     style: "currency",
     currency: "EUR",
     maximumFractionDigits: 0,
@@ -81,86 +83,129 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
     [width, setWidth] = useState(150),
     [copied, setCopied] = useState(false),
     [faq, setFaq] = useState<number | null>(0);
+  useEffect(() => {
+    const lang = getLanguage();
+    document.documentElement.lang = lang;
+    document.title =
+      lang === "en"
+        ? "Yenze — Your product. Their perfect version."
+        : "Yenze — Tu producto. Su versión perfecta.";
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute(
+        "content",
+        lang === "en"
+          ? "Build product configurators with photos, layers or 3D. Connect customer choices to quotes and orders. Open source, with your data under your control."
+          : "Crea configuradores con fotos, capas o 3D. Conecta las decisiones del cliente con presupuestos y pedidos. Código abierto y control de tus datos.",
+      );
+  }, []);
   const repo = "https://github.com/Josusanz/yenze-studio";
-  const start = standalone
-    ? repo + "#quick-start"
-    : loggedIn
-      ? "/?page=products&new=1"
-      : "/?page=signup&new=1";
-  const scene = {
-    ...demo,
-    objects: demo.objects.map((o: any) =>
-      o.id === "top" ? { ...o, size: [width / 100, 0.09, 0.8] } : o,
-    ),
-  };
+  const configuredCreator = import.meta.env.VITE_CREATOR_ORIGIN || "";
+  const creatorOrigin = /^https:\/\//.test(configuredCreator)
+    ? new URL(configuredCreator).origin
+    : "";
+  const creatorAvailable = !standalone || !!creatorOrigin;
+  const creatorBase = standalone ? creatorOrigin : "";
+  const languageQuery = `&lang=${getLanguage()}`;
+  const start = creatorAvailable
+    ? creatorBase +
+      (loggedIn ? "/?page=products&new=1" : "/?page=signup&new=1") +
+      languageQuery
+    : repo + "#quick-start";
+  const scene = resizeDemoTable(demo, width);
   const faqs = [
     [
-      "¿Tengo que saber programar o diseñar en 3D?",
-      "Puedes empezar con el nombre de tu producto, sus opciones y una ficha de resumen. Si tienes imágenes, puedes añadirlas. Para geometría 3D compleja necesitarás un modelo preparado; el constructor incluido trabaja con piezas y medidas.",
+      t("¿Tengo que saber programar o diseñar en 3D?"),
+      t(
+        "Puedes empezar con el nombre de tu producto, sus opciones y una ficha de resumen. Si tienes imágenes, puedes añadirlas. Para geometría 3D compleja necesitarás un modelo preparado; el constructor incluido trabaja con piezas y medidas.",
+      ),
     ],
     [
-      "¿Puedo usarlo sin imágenes?",
-      "Sí. El asistente crea una ficha configurable con las preguntas que tú definas. Tu cliente puede elegir, guardar su configuración y pedir un presupuesto. Puedes incorporar imágenes más adelante.",
+      t("¿Puedo usarlo sin imágenes?"),
+      t(
+        "Sí. El asistente crea una ficha configurable con las preguntas que tú definas. Tu cliente puede elegir, guardar su configuración y pedir un presupuesto. Puedes incorporar imágenes más adelante.",
+      ),
     ],
     [
-      "¿Cómo funciona en mi web?",
-      "Publica el configurador, autoriza el dominio de tu web y copia el iframe. Hay un shortcode para WordPress. Los pedidos se gestionan en Yenze; todavía no sustituye el carrito nativo de Shopify, WooCommerce o Wix.",
+      t("¿Cómo funciona en mi web?"),
+      t(
+        "Publica el configurador, autoriza el dominio de tu web y copia el iframe. Hay un shortcode para WordPress. Los pedidos se gestionan en Yenze; todavía no sustituye el carrito nativo de Shopify, WooCommerce o Wix.",
+      ),
     ],
     [
-      "¿Qué significa que sea open source?",
-      "El código se distribuye para que puedas estudiarlo, instalarlo y contribuir según su licencia. El paquete incluye el código, las pruebas y las instrucciones. Alojarlo, mantenerlo y los servicios externos pueden tener costes.",
+      t("¿Qué significa que sea open source?"),
+      t(
+        "El código se distribuye para que puedas estudiarlo, instalarlo y contribuir según su licencia. El paquete incluye el código, las pruebas y las instrucciones. Alojarlo, mantenerlo y los servicios externos pueden tener costes.",
+      ),
     ],
     [
-      "¿Puedo cobrar pedidos?",
-      "La integración utiliza Stripe Connect para que el comercio conecte su cuenta. Necesita claves, webhook y verificación de Stripe. También puedes trabajar con presupuestos sin activar pagos.",
+      t("¿Puedo cobrar pedidos?"),
+      t(
+        "La integración utiliza Stripe Connect para que el comercio conecte su cuenta. Necesita claves, webhook y verificación de Stripe. También puedes trabajar con presupuestos sin activar pagos.",
+      ),
     ],
     [
-      "¿Es una plataforma terminada para cualquier empresa?",
-      "Es una beta abierta. Ya tiene constructor, reglas, portal, presupuestos e integraciones. Antes de vender con una instalación real hay que verificar pagos, correo, copias, seguridad operativa y los requisitos concretos del negocio. El alcance y las limitaciones están documentados.",
+      t("¿Es una plataforma terminada para cualquier empresa?"),
+      t(
+        "Es una beta abierta. Ya tiene constructor, reglas, portal, presupuestos e integraciones. Antes de vender con una instalación real hay que verificar pagos, correo, copias, seguridad operativa y los requisitos concretos del negocio. El alcance y las limitaciones están documentados.",
+      ),
     ],
   ];
   return (
     <div className="marketing">
       <a className="skip-link" href="#main-content">
-        Ir al contenido
+        {t("Ir al contenido")}
       </a>
       <div className="announcement">
         <span className="live-dot" />
-        BETA ABIERTA · El configurador también puede ser tuyo.
+        {t("BETA ABIERTA · El configurador también puede ser tuyo.")}
         <a href="#open-source">
-          Explora el proyecto <ArrowUpRight size={12} />
+          {t("Explora el proyecto")}
+          <ArrowUpRight size={12} />
         </a>
       </div>
       <header className="marketing-nav">
         <a href="/?page=home" className="marketing-logo">
           yenze<span>MAKE IT YOURS.</span>
         </a>
-        <nav className={menu ? "open" : ""} aria-label="Navegación principal">
+        <nav
+          className={menu ? "open" : ""}
+          aria-label={t("Navegación principal")}
+        >
           <a href="#how" onClick={() => setMenu(false)}>
-            Cómo funciona
+            {t("Cómo funciona")}
           </a>
           <a href="#playground" onClick={() => setMenu(false)}>
-            Pruébalo
+            {t("Pruébalo")}
           </a>
           <a href="#open-source" onClick={() => setMenu(false)}>
             Open source
           </a>
         </nav>
         <div className="nav-actions">
+          <LanguageSelect />
           <a
             href={
-              standalone ? repo : loggedIn ? "/?page=dashboard" : "/?page=login"
+              creatorAvailable
+                ? creatorBase +
+                  (loggedIn ? "/?page=dashboard" : "/?page=login") +
+                  languageQuery
+                : repo
             }
           >
-            {standalone ? "GitHub ↗" : loggedIn ? "Mi estudio" : "Entrar"}
+            {!creatorAvailable
+              ? "GitHub ↗"
+              : loggedIn
+                ? t("Mi estudio")
+                : t("Entrar")}
           </a>
           <a className="m-button dark" href={start}>
-            {standalone ? "Instalar Yenze" : "Empieza a crear"}{" "}
+            {!creatorAvailable ? t("Instalar Yenze") : t("Empieza a crear")}{" "}
             <ArrowUpRight size={15} />
           </a>
           <button
             className="mobile-menu"
-            aria-label={menu ? "Cerrar menú" : "Abrir menú"}
+            aria-label={menu ? t("Cerrar menú") : t("Abrir menú")}
             onClick={() => setMenu(!menu)}
           >
             {menu ? <X /> : <Menu />}
@@ -172,46 +217,52 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
           <div className="hero-copy">
             <div className="m-eyebrow">
               <span />
-              CONFIGURACIÓN DE PRODUCTOS, ABIERTA A TODOS
+              {t("EL CONFIGURADOR QUE PUEDES HACER TUYO")}
             </div>
             <h1>
-              Tú creas
+              {t("Tu producto.")}
               <br />
-              el producto.
+              {t("A su manera.")}
               <br />
-              <em>Ellos lo hacen suyo.</em>
+              <em>{t("En tu propia web.")}</em>
             </h1>
             <p>
-              Convierte las opciones de tu producto en una experiencia que tus
-              clientes puedan ver, tocar y elegir. Empieza con lo que tienes.
+              {t(
+                "Deja que tus clientes elijan acabados, añadan su diseño y vean el resultado. Recibe la configuración exacta para presupuestar o preparar cada pedido.",
+              )}
             </p>
             <div className="hero-ctas">
               <a className="m-button dark" href={start}>
-                {standalone
-                  ? "Crear con Yenze · instalar"
-                  : "Crear mi primer configurador"}{" "}
+                {!creatorAvailable
+                  ? t("Crear con Yenze · instalar")
+                  : t("Crear mi primer configurador")}{" "}
                 <ArrowUpRight size={17} />
               </a>
               <a className="m-link" href="#playground">
-                Primero, déjame probar <ArrowRight size={16} />
+                {t("Verlo en acción")}
+                <ArrowRight size={16} />
               </a>
             </div>
             <div className="hero-note">
-              <Check size={13} /> Sin código para empezar <span /> 2D, 3D o sin
-              imágenes
+              <Check size={13} />
+              {t("Sin código para empezar")}
+              <span />
+              {t("2D, 3D o sin imágenes")}
             </div>
-            {standalone && (
+            {!creatorAvailable && (
               <small className="beta-context">
-                Demo interactiva sin registro. El editor completo se instala
-                desde GitHub.
+                {t(
+                  "Demo interactiva sin registro. El editor completo se instala desde GitHub.",
+                )}
               </small>
             )}
           </div>
           <div className="hero-product">
             <div className="product-overline">
-              <span>POSIBILIDAD N.º 001</span>
+              <span>{t("POSIBILIDAD N.º 001")}</span>
               <span>
-                Diseña tu versión <Plus size={13} />
+                {t("Diseña tu versión")}
+                <Plus size={13} />
               </span>
             </div>
             <img
@@ -222,28 +273,29 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
                   : "/brand/lounge-blue.png"
               }
               alt={
-                "Butaca y reposapiés de bouclé " +
-                (fabric === "cream" ? "marfil" : "azul noche")
+                t("Butaca y reposapiés de bouclé ") +
+                (fabric === "cream" ? t("marfil") : t("azul noche"))
               }
               width="1536"
               height="1024"
               fetchPriority="high"
             />
             <div className="product-drag-note">
-              <MousePointer2 size={13} /> Prueba otro acabado
+              <MousePointer2 size={13} />
+              {t("Prueba otro acabado")}
             </div>
             <div className="hero-product-controls">
               <div>
-                <small>Butaca Nube · ejemplo 2D</small>
+                <small>{t("Butaca Nube · ejemplo 2D")}</small>
                 <h2>
                   {fabric === "cream"
-                    ? "Un poco de calma."
-                    : "Un poco más de ti."}
+                    ? t("Un poco de calma.")
+                    : t("Un poco más de ti.")}
                 </h2>
               </div>
               <div className="fabric-control">
                 <button
-                  aria-label="Acabado marfil"
+                  aria-label={t("Acabado marfil")}
                   aria-pressed={fabric === "cream"}
                   className={fabric === "cream" ? "active" : ""}
                   onClick={() => setFabric("cream")}
@@ -252,7 +304,7 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
                   {fabric === "cream" && <Check size={16} />}
                 </button>
                 <button
-                  aria-label="Acabado azul noche"
+                  aria-label={t("Acabado azul noche")}
                   aria-pressed={fabric === "blue"}
                   className={fabric === "blue" ? "active" : ""}
                   onClick={() => setFabric("blue")}
@@ -265,114 +317,138 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
             <div className="floating-spec">
               <i />
               <span>
-                {fabric === "cream" ? "Bouclé marfil" : "Bouclé azul noche"}
-                <small>Tu elección, al instante</small>
+                {fabric === "cream"
+                  ? t("Bouclé marfil")
+                  : t("Bouclé azul noche")}
+                <small>{t("Tu elección, al instante")}</small>
               </span>
               <Check size={14} />
             </div>
           </div>
         </section>
         <div className="capability-strip">
-          <span>UNA BASE. MUCHAS FORMAS DE CREAR.</span>
+          <span>{t("UNA BASE. MUCHAS FORMAS DE CREAR.")}</span>
           <div>
-            <ImageMark /> Imágenes y capas
+            <ImageMark />
+            {t("Imágenes y capas")}
           </div>
           <div>
-            <Box size={17} /> Modelos 3D
+            <Box size={17} />
+            {t("Modelos 3D")}
           </div>
           <div>
-            <GitBranch size={17} /> Opciones conectadas
+            <GitBranch size={17} />
+            {t("Opciones conectadas")}
           </div>
           <div>
-            <Code2 size={17} /> Tu web, tu código
+            <Code2 size={17} />
+            {t("Tu web, tu código")}
           </div>
         </div>
         <section className="launch-usecases" id="examples">
           <div className="section-intro">
             <div>
               <span className="m-eyebrow">
-                DE UNA IDEA A ALGO QUE SE PUEDE ELEGIR
+                {t("DE UNA IDEA A ALGO QUE SE PUEDE ELEGIR")}
               </span>
               <h2>
-                Tres formas de empezar.
+                {t("Tres formas de empezar.")}
                 <br />
-                <em>El mismo espacio para crear.</em>
+                <em>{t("El mismo espacio para crear.")}</em>
               </h2>
             </div>
             <p>
-              Trae tu producto, sus fotos o simplemente las decisiones que toma
-              tu cliente. Empieza por un caso concreto y amplíalo a tu ritmo.
+              {t(
+                "Trae tu producto, sus fotos o simplemente las decisiones que toma tu cliente. Empieza por un caso concreto y amplíalo a tu ritmo.",
+              )}
             </p>
           </div>
           <div className="launch-usecase-grid">
             <article>
               <img
                 src="/launch/shirt-editor.png"
-                alt="Editor real de camiseta con un diseño gráfico sobre un modelo 3D"
+                alt={t(
+                  "Editor real de camiseta con un diseño gráfico sobre un modelo 3D",
+                )}
                 loading="lazy"
                 width="1440"
                 height="1000"
               />
               <div>
-                <span className="m-eyebrow">01 / PERSONALIZACIÓN TEXTIL</span>
+                <span className="m-eyebrow">
+                  {t("01 / PERSONALIZACIÓN TEXTIL")}
+                </span>
                 <h3>
-                  De «pon mi logo»
-                  <br />a «así lo quiero».
+                  {t("De «pon mi logo»")}
+                  <br />
+                  {t("a «así lo quiero».")}
                 </h3>
                 <p>
-                  Texto e imágenes sobre una camiseta 3D. Originales, revisión
-                  del cliente y archivos para el taller.
+                  {t(
+                    "Texto e imágenes sobre una camiseta 3D. Originales, revisión del cliente y archivos para el taller.",
+                  )}
                 </p>
                 <a className="m-link" href={start}>
-                  Crear una camiseta <ArrowUpRight size={16} />
+                  {t("Crear una camiseta")}
+                  <ArrowUpRight size={16} />
                 </a>
               </div>
             </article>
             <article>
               <img
                 src="/brand/lounge-blue.png"
-                alt="Butaca de ejemplo con acabado azul"
+                alt={t("Butaca de ejemplo con acabado azul")}
                 loading="lazy"
                 width="1536"
                 height="1024"
               />
               <div>
-                <span className="m-eyebrow">02 / PRODUCTOS VISUALES</span>
+                <span className="m-eyebrow">
+                  {t("02 / PRODUCTOS VISUALES")}
+                </span>
                 <h3>
-                  Cada acabado.
+                  {t("Cada acabado.")}
                   <br />
-                  Una posibilidad.
+                  {t("Una posibilidad.")}
                 </h3>
                 <p>
-                  Fotografías, capas y modelos GLB para enseñar qué cambia
-                  cuando el cliente elige.
+                  {t(
+                    "Fotografías, capas y modelos GLB para enseñar qué cambia cuando el cliente elige.",
+                  )}
                 </p>
                 <a className="m-link" href="#playground">
-                  Probar el ejemplo 3D <ArrowUpRight size={16} />
+                  {t("Probar el ejemplo 3D")}
+                  <ArrowUpRight size={16} />
                 </a>
               </div>
             </article>
             <article>
               <img
                 src="/launch/service-configurator.png"
-                alt="Configurador de servicios con modalidades y precio de la propuesta"
+                alt={t(
+                  "Configurador de servicios con modalidades y precio de la propuesta",
+                )}
                 loading="lazy"
                 width="1440"
                 height="1000"
               />
               <div>
-                <span className="m-eyebrow">03 / SERVICIOS A MEDIDA</span>
+                <span className="m-eyebrow">
+                  {t("03 / SERVICIOS A MEDIDA")}
+                </span>
                 <h3>
-                  No todo producto
+                  {t("No todo producto")}
                   <br />
-                  necesita una imagen.
+                  {t("necesita una imagen.")}
                 </h3>
                 <p>
-                  Ayuda a elegir un servicio. Recibe la solicitud, prepara la
-                  propuesta y conserva la conversación.
+                  {t(
+                    "Ayuda a elegir un servicio. Recibe la solicitud, prepara la propuesta y conserva la conversación.",
+                  )}
                 </p>
                 <a className="m-link" href={start}>
-                  Crear una propuesta <ArrowUpRight size={16} />
+                  {t("Crear una propuesta")}
+                  <ArrowUpRight size={16} />
                 </a>
               </div>
             </article>
@@ -381,48 +457,53 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
         <section id="how" className="how-section">
           <div className="section-intro">
             <div>
-              <span className="m-eyebrow">MENOS MANUAL. MÁS INTUICIÓN.</span>
+              <span className="m-eyebrow">
+                {t("MENOS MANUAL. MÁS INTUICIÓN.")}
+              </span>
               <h2>
-                No necesitas conocer
+                {t("No empieces")}
                 <br />
-                la herramienta.
+                {t("programando.")}
                 <br />
-                <em>Conoces tu producto.</em>
+                <em>{t("Empieza por lo que vendes.")}</em>
               </h2>
             </div>
             <p>
-              El primer paso no es aprender qué es una capa. Es contar qué
-              vendes. Y decidir qué podrá elegir quien lo compra.
+              {t(
+                "Tu producto marca el camino. Define qué puede elegir el cliente, conecta las opciones y prueba el resultado mientras construyes.",
+              )}
             </p>
           </div>
           <div className="how-grid">
             <article>
               <div className="how-number">
-                01 <span>CUÉNTANOS QUÉ VENDES</span>
+                01 <span>{t("CUÉNTANOS QUÉ VENDES")}</span>
               </div>
               <div className="how-visual name-visual">
-                <span>¿Qué vas a vender?</span>
+                <span>{t("¿Qué vas a vender?")}</span>
                 <strong>
-                  Una mesa a medida
+                  {t("Una mesa a medida")}
                   <span className="cursor" />
                 </strong>
                 <div>
-                  <i>Producto</i>
+                  <i>{t("Producto")}</i>
                   <i className="chosen">
-                    Mobiliario <Check size={11} />
+                    {t("Mobiliario")}
+                    <Check size={11} />
                   </i>
-                  <i>Servicio</i>
+                  <i>{t("Servicio")}</i>
                 </div>
               </div>
-              <h3>Empieza con una idea.</h3>
+              <h3>{t("Empieza con una idea.")}</h3>
               <p>
-                No hace falta tener todos los archivos. Un nombre y una primera
-                decisión son suficientes.
+                {t(
+                  "No hace falta tener todos los archivos. Un nombre y una primera decisión son suficientes.",
+                )}
               </p>
             </article>
             <article>
               <div className="how-number">
-                02 <span>DALE SUS POSIBILIDADES</span>
+                02 <span>{t("DALE SUS POSIBILIDADES")}</span>
               </div>
               <div className="how-visual branch-visual">
                 <div>
@@ -430,89 +511,103 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
                 </div>
                 <span>
                   <i />
-                  Madera <Check size={12} />
+                  {t("Madera")}
+                  <Check size={12} />
                 </span>
                 <span className="branch-child">
                   <CornerMark />
-                  Acabado <small>Natural · Lacado</small>
+                  {t("Acabado")}
+                  <small>{t("Natural · Lacado")}</small>
                 </span>
               </div>
-              <h3>Una elección lleva a otra.</h3>
+              <h3>{t("Una elección lleva a otra.")}</h3>
               <p>
-                Añade colores, extras y subopciones. Muestra solo lo que tiene
-                sentido en cada combinación.
+                {t(
+                  "Añade colores, extras y subopciones. Muestra solo lo que tiene sentido en cada combinación.",
+                )}
               </p>
             </article>
             <article>
               <div className="how-number">
-                03 <span>PRUÉBALO. HAZLO TUYO.</span>
+                03 <span>{t("PRUÉBALO. HAZLO TUYO.")}</span>
               </div>
               <div className="how-visual publish-visual">
                 <div>
-                  <span className="live-dot" /> Listo para compartir
+                  <span className="live-dot" />
+                  {t("Listo para compartir")}
                 </div>
                 <div className="tiny-preview">
                   <Box size={30} />
                   <span>
-                    Tu mesa.<small>Roble · Natural · 150 cm</small>
+                    {t("Tu mesa.")}
+                    <small>{t("Roble · Natural · 150 cm")}</small>
                   </span>
                 </div>
                 <span className="fake-publish">
-                  Publicar <ArrowUpRight size={14} />
+                  {t("Publicar")}
+                  <ArrowUpRight size={14} />
                 </span>
               </div>
-              <h3>De tu estudio a tu web.</h3>
+              <h3>{t("De tu estudio a tu web.")}</h3>
               <p>
-                Revisa la experiencia, publica y comparte. Las configuraciones y
-                solicitudes llegan a tu estudio.
+                {t(
+                  "Revisa la experiencia, publica y comparte. Las configuraciones y solicitudes llegan a tu estudio.",
+                )}
               </p>
             </article>
           </div>
           <a className="m-link" href={start}>
-            Vale, quiero crear el mío <ArrowUpRight size={17} />
+            {t("Vale, quiero crear el mío")}
+            <ArrowUpRight size={17} />
           </a>
         </section>
         <section id="playground" className="playground-section">
           <div className="section-intro">
             <div>
-              <span className="m-eyebrow">MENOS EXPLICAR. MÁS PROBAR.</span>
+              <span className="m-eyebrow">
+                {t("MENOS EXPLICAR. MÁS PROBAR.")}
+              </span>
               <h2>
-                Haz un cambio.
+                {t("Haz un cambio.")}
                 <br />
-                <em>Ya lo has entendido.</em>
+                <em>{t("Ya lo has entendido.")}</em>
               </h2>
             </div>
             <p>
-              Esta mesa está hecha con las mismas piezas que tienes en el
-              constructor. Cambia el acabado, ajusta el ancho y gira la vista.
+              {t(
+                "Esta mesa está hecha con las mismas piezas que tienes en el constructor. Cambia el acabado, ajusta el ancho y gira la vista.",
+              )}
             </p>
           </div>
           <div className="playground">
             <div className="playground-stage">
               <div className="playground-label">
                 <span>
-                  <span className="live-dot" /> DEMOSTRACIÓN INTERACTIVA
+                  <span className="live-dot" />
+                  {t("DEMOSTRACIÓN INTERACTIVA")}
                 </span>
-                <span>3D EN TIEMPO REAL</span>
+                <span>{t("3D EN TIEMPO REAL")}</span>
               </div>
               <Suspense
-                fallback={<div className="empty">Preparando tu mesa…</div>}
+                fallback={
+                  <div className="empty">{t("Preparando tu mesa…")}</div>
+                }
               >
                 <Model m={scene} s={{ top: finish }} />
               </Suspense>
               <span className="playground-hint">
-                Arrastra para explorar cada ángulo
+                {t("Arrastra para explorar cada ángulo")}
               </span>
             </div>
             <div className="playground-options">
-              <span className="m-eyebrow">LA MESA FORMA</span>
+              <span className="m-eyebrow">{t("LA MESA FORMA")}</span>
               <h3>
-                Un diseño.
+                {t("Un diseño.")}
                 <br />
-                Tu manera de verlo.
+                {t("Tu manera de verlo.")}
               </h3>
-              <p>Un ejemplo sencillo de lo que puedes construir.</p>
-              <label>01 — El acabado</label>
+              <p>{t("Un ejemplo sencillo de lo que puedes construir.")}</p>
+              <label>{t("01 — El acabado")}</label>
               <div className="demo-options">
                 {demo.groups[0].options.map((o: any) => (
                   <button
@@ -527,9 +622,10 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
                 ))}
               </div>
               <label className="range-label">
-                02 — El ancho<strong>{width} cm</strong>
+                {t("02 — El ancho")}
+                <strong>{width} cm</strong>
                 <input
-                  aria-label="Ancho de la mesa de ejemplo"
+                  aria-label={t("Ancho de la mesa de ejemplo")}
                   type="range"
                   min="100"
                   max="200"
@@ -539,15 +635,17 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
                 />
               </label>
               <div className="demo-total">
-                <span>Precio de ejemplo</span>
+                <span>{t("Precio de ejemplo")}</span>
                 <strong>{euro(240 + (finish === "oak" ? 0 : 20))}</strong>
               </div>
               <small>
-                La medida cambia la geometría; en este ejemplo no cambia el
-                precio.
+                {t(
+                  "La medida cambia la geometría; en este ejemplo no cambia el precio.",
+                )}
               </small>
               <a className="m-button dark" href={start}>
-                Ahora crea el tuyo <ArrowUpRight size={16} />
+                {t("Ahora crea el tuyo")}
+                <ArrowUpRight size={16} />
               </a>
             </div>
           </div>
@@ -555,42 +653,47 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
         <section className="studio-section">
           <div className="studio-copy">
             <span className="m-eyebrow">
-              LA EXPERIENCIA SIGUE DESPUÉS DEL CLIC
+              {t("LA EXPERIENCIA SIGUE DESPUÉS DEL CLIC")}
             </span>
             <h2>
-              Bonito por fuera.
+              {t("Cada elección, clara.")}
               <br />
               <em>
-                Todo conectado
+                {t("Cada pedido,")}
                 <br />
-                por dentro.
+                {t("bien definido.")}
               </em>
             </h2>
             <p>
-              El configurador es el comienzo. En tu estudio, las ideas guardadas
-              se convierten en conversaciones, presupuestos y pedidos.
+              {t(
+                "Del «lo quiero así» a una propuesta concreta. Conserva las opciones, los archivos y la conversación junto al pedido, sin reconstruirlo desde mensajes sueltos.",
+              )}
             </p>
             <ul>
               <li>
-                <Check size={15} /> Un espacio privado para cada negocio
+                <Check size={15} />
+                {t("Un espacio privado para cada negocio")}
               </li>
               <li>
-                <Check size={15} /> Configuraciones guardadas por tus clientes
+                <Check size={15} />
+                {t("Configuraciones guardadas por tus clientes")}
               </li>
               <li>
-                <Check size={15} /> Presupuestos, mensajes y seguimiento
+                <Check size={15} />
+                {t("Presupuestos, mensajes y seguimiento")}
               </li>
               <li>
-                <Check size={15} /> Pagos mediante Stripe Connect, al activarlo
+                <Check size={15} />
+                {t("Pagos mediante Stripe Connect, al activarlo")}
               </li>
             </ul>
           </div>
           <div
             className="studio-illustration"
-            aria-label="Ilustración de la gestión de presupuestos"
+            aria-label={t("Ilustración de la gestión de presupuestos")}
           >
             <header>
-              <span>Tu estudio</span>
+              <span>{t("Tu estudio")}</span>
               <span className="live-dot" />
             </header>
             <div className="illustration-order">
@@ -598,51 +701,53 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
                 <Box size={27} />
               </span>
               <div>
-                <strong>Mesa a medida</strong>
-                <small>Configuración de ejemplo</small>
+                <strong>{t("Mesa a medida")}</strong>
+                <small>{t("Configuración de ejemplo")}</small>
               </div>
-              <span className="illustration-badge">Presupuesto</span>
+              <span className="illustration-badge">{t("Presupuesto")}</span>
             </div>
             <div className="illustration-spec">
               <span>
-                Material <strong>Roble</strong>
+                Material <strong>{t("Roble")}</strong>
               </span>
               <span>
-                Acabado <strong>Natural</strong>
+                {t("Acabado")}
+                <strong>Natural</strong>
               </span>
             </div>
             <div className="illustration-chat">
               <i>CL</i>
               <p>
-                Me encanta esta combinación.
+                {t("Me encanta esta combinación.")}
                 <br />
-                ¿Podemos incluir la entrega?
+                {t("¿Podemos incluir la entrega?")}
               </p>
             </div>
             <div className="illustration-chat reply">
               <p>
-                Claro. Aquí tienes la propuesta
+                {t("Claro. Aquí tienes la propuesta")}
                 <br />
-                con todos los detalles.
+                {t("con todos los detalles.")}
               </p>
               <i>Y</i>
             </div>
             <footer>
-              <span>Una conversación. Todo el contexto.</span>
+              <span>{t("Una conversación. Todo el contexto.")}</span>
               <ArrowUpRight size={16} />
             </footer>
           </div>
         </section>
         <section className="connect-section">
-          <span className="m-eyebrow">TU PRODUCTO, DONDE YA VENDES</span>
+          <span className="m-eyebrow">{t("TU PRODUCTO, DONDE YA VENDES")}</span>
           <h2>
-            Tu web no tiene
+            {t("Tu web no tiene")}
             <br />
-            que empezar de cero.
+            {t("que empezar de cero.")}
           </h2>
           <p>
-            Inserta tu configurador con un iframe. O conecta tus herramientas al
-            API y tus agentes al servidor MCP.
+            {t(
+              "Inserta tu configurador con un iframe. O conecta tus herramientas al API y tus agentes al servidor MCP.",
+            )}
           </p>
           <div className="platforms">
             <span>WordPress</span>
@@ -650,17 +755,20 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
             <span>Squarespace</span>
             <span>Framer</span>
             <span>
-              Tu propia web <ArrowUpRight size={16} />
+              {t("Tu propia web")}
+              <ArrowUpRight size={16} />
             </span>
           </div>
           <small>
-            La inserción comparte la experiencia de Yenze. Los carritos nativos
-            de estas plataformas requieren adaptadores adicionales.
+            {t(
+              "La inserción comparte la experiencia de Yenze. Los carritos nativos de estas plataformas requieren adaptadores adicionales.",
+            )}
           </small>
           <div className="code-card">
             <div>
               <span>
-                <i /> INSERCIÓN EN TU WEB
+                <i />
+                {t("INSERCIÓN EN TU WEB")}
               </span>
               <button
                 onClick={async () => {
@@ -674,7 +782,8 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
                   }
                 }}
               >
-                {copied ? "Copiado" : "Copiar ejemplo"} <Code2 size={13} />
+                {copied ? t("Copiado") : t("Copiar ejemplo")}{" "}
+                <Code2 size={13} />
               </button>
             </div>
             <code>
@@ -683,33 +792,34 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
           </div>
         </section>
         <section className="ownership-section" id="ownership">
-          <span className="m-eyebrow">ELIGE CÓMO HACERLO TUYO</span>
+          <span className="m-eyebrow">{t("ELIGE CÓMO HACERLO TUYO")}</span>
           <h2>
-            El código es abierto.
+            {t("Tu negocio. Tus reglas.")}
             <br />
-            <em>La ayuda puede acompañarte.</em>
+            <em>{t("También tu código.")}</em>
           </h2>
           <div className="ownership-grid">
             <article>
               <span className="ownership-label">
-                DISPONIBLE · AUTOALOJAMIENTO
+                {t("DISPONIBLE · AUTOALOJAMIENTO")}
               </span>
               <h3>
-                Tu infraestructura.
+                {t("Tu infraestructura.")}
                 <br />
-                Tu control.
+                {t("Tu control.")}
               </h3>
               <p>
-                Editor, motor, plantillas incluidas y backend en una
-                distribución abierta. Conserva tus configuradores y tus
-                archivos.
+                {t(
+                  "Editor, motor, plantillas incluidas y backend en una distribución abierta. Conserva tus configuradores y tus archivos.",
+                )}
               </p>
               <ul>
-                <li>Código y documentación incluidos</li>
-                <li>API, MCP y SDK para insertar en tu web</li>
+                <li>{t("Código y documentación incluidos")}</li>
+                <li>{t("API, MCP y SDK para insertar en tu web")}</li>
                 <li>
-                  Sin cuota de licencia del motor; infraestructura y servicios
-                  externos por tu cuenta
+                  {t(
+                    "Sin cuota de licencia del motor; infraestructura y servicios externos por tu cuenta",
+                  )}
                 </li>
               </ul>
               <a
@@ -717,30 +827,32 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
                 href="https://github.com/Josusanz/yenze-studio/releases"
                 download
               >
-                Descargar el proyecto <Download size={16} />
+                {t("Descargar el proyecto")}
+                <Download size={16} />
               </a>
             </article>
             <article>
               <span className="ownership-label">
-                EN PREPARACIÓN · SERVICIO GESTIONADO
+                {t("EN PREPARACIÓN · SERVICIO GESTIONADO")}
               </span>
               <h3>
-                Céntrate en crear.
+                {t("Céntrate en crear.")}
                 <br />
-                Con ayuda al otro lado.
+                {t("Con ayuda al otro lado.")}
               </h3>
               <p>
-                Estamos preparando una oferta de alojamiento, copias,
-                almacenamiento y soporte para quienes prefieran delegar la
-                operación.
+                {t(
+                  "Estamos preparando una oferta de alojamiento, copias, almacenamiento y soporte para quienes prefieran delegar la operación.",
+                )}
               </p>
               <ul>
-                <li>Validación primero con negocios piloto</li>
-                <li>Adaptación e integración según el proyecto</li>
-                <li>Precios y disponibilidad todavía sin anunciar</li>
+                <li>{t("Validación primero con negocios piloto")}</li>
+                <li>{t("Adaptación e integración según el proyecto")}</li>
+                <li>{t("Precios y disponibilidad todavía sin anunciar")}</li>
               </ul>
               <a className="m-link" href="/community.html">
-                Conoce el estado del proyecto <ArrowUpRight size={16} />
+                {t("Conoce el estado del proyecto")}
+                <ArrowUpRight size={16} />
               </a>
             </article>
           </div>
@@ -748,19 +860,19 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
         <section id="open-source" className="open-section">
           <div>
             <span className="m-eyebrow">
-              LAS BUENAS HERRAMIENTAS CRECEN CUANDO SE COMPARTEN
+              {t("LAS BUENAS HERRAMIENTAS CRECEN CUANDO SE COMPARTEN")}
             </span>
             <h2>
-              Un producto propio.
+              {t("Un producto propio.")}
               <br />
-              Un proyecto
+              {t("Un proyecto")}
               <br />
-              <em>de todos.</em>
+              <em>{t("de todos.")}</em>
             </h2>
             <p>
-              Creemos que crear un configurador no debería estar reservado a
-              quien puede pagar una plataforma cerrada. Por eso estamos
-              construyendo Yenze con código abierto.
+              {t(
+                "Creemos que crear un configurador no debería estar reservado a quien puede pagar una plataforma cerrada. Por eso estamos construyendo Yenze con código abierto.",
+              )}
             </p>
             <div className="open-actions">
               <a
@@ -768,10 +880,12 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
                 href="https://github.com/Josusanz/yenze-studio/releases"
                 download
               >
-                <Download size={16} /> Descargar el código
+                <Download size={16} />
+                {t("Descargar el código")}
               </a>
               <a className="m-link" href="/community.html">
-                Cómo contribuir <Heart size={16} />
+                {t("Cómo contribuir")}
+                <Heart size={16} />
               </a>
             </div>
             <a
@@ -780,46 +894,52 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
               target="_blank"
               rel="noreferrer"
             >
-              Ver código, roadmap y contribuir en GitHub <Code2 size={16} />
+              {t("Ver código, roadmap y contribuir en GitHub")}
+              <Code2 size={16} />
             </a>
-            <small>Beta abierta · AGPL-3.0 · Autoalojamiento disponible</small>
+            <small>
+              {t("Beta abierta · AGPL-3.0 · Autoalojamiento disponible")}
+            </small>
           </div>
           <div className="open-cards">
             <article>
               <Code2 size={22} />
-              <h3>Instálalo a tu manera.</h3>
+              <h3>{t("Instálalo a tu manera.")}</h3>
               <p>
-                Código, documentación y pruebas para explorar y adaptar la
-                herramienta.
+                {t(
+                  "Código, documentación y pruebas para explorar y adaptar la herramienta.",
+                )}
               </p>
             </article>
             <article>
               <GitBranch size={22} />
-              <h3>Aporta una posibilidad.</h3>
+              <h3>{t("Aporta una posibilidad.")}</h3>
               <p>
-                Una plantilla, una mejora de accesibilidad, una integración o
-                una buena prueba.
+                {t(
+                  "Una plantilla, una mejora de accesibilidad, una integración o una buena prueba.",
+                )}
               </p>
             </article>
             <article>
               <Heart size={22} />
-              <h3>Ayuda a hacerlo mejor.</h3>
+              <h3>{t("Ayuda a hacerlo mejor.")}</h3>
               <p>
-                El proyecto aún está creciendo. Las limitaciones y tareas
-                pendientes están a la vista.
+                {t(
+                  "El proyecto aún está creciendo. Las limitaciones y tareas pendientes están a la vista.",
+                )}
               </p>
             </article>
           </div>
         </section>
         <section className="faq-section">
           <div>
-            <span className="m-eyebrow">SIN LETRA PEQUEÑA</span>
+            <span className="m-eyebrow">{t("SIN LETRA PEQUEÑA")}</span>
             <h2>
-              Buenas preguntas.
+              {t("Buenas preguntas.")}
               <br />
-              <em>Respuestas claras.</em>
+              <em>{t("Respuestas claras.")}</em>
             </h2>
-            <p>El código es abierto. Las expectativas también.</p>
+            <p>{t("El código es abierto. Las expectativas también.")}</p>
           </div>
           <div>
             {faqs.map(([question, answer], i) => (
@@ -838,16 +958,23 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
           </div>
         </section>
         <section className="last-cta">
-          <span className="m-eyebrow">TU SIGUIENTE PRODUCTO EMPIEZA AQUÍ</span>
+          <span className="m-eyebrow">
+            {t("TU SIGUIENTE PRODUCTO EMPIEZA AQUÍ")}
+          </span>
           <h2>
-            Lo que vendes,
+            {t("Deja de explicar cada opción.")}
             <br />
-            <em>con más posibilidades.</em>
+            <em>{t("Deja que la prueben.")}</em>
           </h2>
           <a className="m-button dark" href={start}>
-            Vamos a crear el tuyo <ArrowUpRight size={18} />
+            {t("Vamos a crear el tuyo")}
+            <ArrowUpRight size={18} />
           </a>
-          <small>Empieza con una idea. El resto, paso a paso.</small>
+          <small>
+            {t(
+              "Empieza con un producto. Construye una experiencia que sea tuya.",
+            )}
+          </small>
         </section>
       </main>
       <footer className="marketing-footer">
@@ -855,22 +982,22 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
           yenze<span>MAKE IT YOURS.</span>
         </a>
         <p>
-          Herramientas abiertas.
+          {t("Herramientas abiertas.")}
           <br />
-          Productos con posibilidades.
+          {t("Productos con posibilidades.")}
         </p>
         <div>
-          <a href="/community.html">Proyecto y comunidad</a>
+          <a href="/community.html">{t("Proyecto y comunidad")}</a>
           <a href="https://github.com/Josusanz/yenze-studio/releases" download>
-            Código fuente
+            {t("Código fuente")}
           </a>
-          <a href="/privacy.html">Privacidad</a>
-          <a href="/terms.html">Condiciones</a>
+          <a href="/privacy.html">{t("Privacidad")}</a>
+          <a href="/terms.html">{t("Condiciones")}</a>
         </div>
         <span>
           © {new Date().getFullYear()} Yenze Studio contributors.
           <br />
-          Construyéndose en abierto.
+          {t("Construyéndose en abierto.")}
         </span>
       </footer>
     </div>

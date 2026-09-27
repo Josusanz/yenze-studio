@@ -5,7 +5,7 @@ import json
 
 root = Path(__file__).resolve().parent.parent
 out = root / 'public/downloads/yenze-studio-source.zip'
-files = ['package.json', 'package-lock.json', 'README.md', 'LICENSE', 'NOTICE.md', 'CONTRIBUTING.md', 'ROADMAP.md', 'SECURITY.md', '.env.example', '.gitignore', '.dockerignore', 'Dockerfile', 'index.html', 'tsconfig.json', 'vite.config.ts', 'playwright.config.ts', 'examples/README.md']
+files = ['package.json', 'package-lock.json', 'README.md', 'LICENSE', 'NOTICE.md', 'CONTRIBUTING.md', 'ROADMAP.md', 'SECURITY.md', '.env.example', '.gitignore', '.dockerignore', 'Dockerfile', 'render.yaml', 'index.html', 'tsconfig.json', 'vite.config.ts', 'playwright.config.ts', 'examples/README.md']
 folders = ['core', 'server', 'src', 'tests', 'integrations', 'docs', 'scripts', '.github', 'public/brand', 'public/models', 'public/launch', 'deploy']
 files += [str(p.relative_to(root)) for folder in folders for p in (root / folder).rglob('*') if p.is_file()]
 files += [str(p.relative_to(root)) for p in (root / 'public').glob('*') if p.is_file()]
