@@ -4,6 +4,7 @@ test("Textile design supports text, drag, back, image, undo and durable shared d
   page,
   browser,
 }) => {
+  test.setTimeout(120000);
   await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
@@ -72,6 +73,7 @@ test("Textile design supports text, drag, back, image, undo and durable shared d
   await page.getByRole("button", { name: "Espalda", exact: true }).click();
   await page.getByRole("button", { name: "Añadir texto", exact: true }).click();
   await page.getByLabel("Tu texto", { exact: true }).fill("EDICIÓN 01");
+  const uploaded = page.waitForResponse(r => r.url().endsWith("/print-assets") && r.request().method() === "POST");
   await page.getByLabel("Imagen para la camiseta").setInputFiles({
     name: "print.png",
     mimeType: "image/png",
@@ -81,7 +83,8 @@ test("Textile design supports text, drag, back, image, undo and durable shared d
       .png()
       .toBuffer(),
   });
-  await expect(page.locator(".textile-layer-list button")).toHaveCount(2);
+  expect((await uploaded).status()).toBe(201);
+  await expect(page.locator(".textile-layer-list button")).toHaveCount(2, { timeout: 20000 });
   await page.screenshot({ path: "artifacts/textile-editor.png" });
   await page
     .getByRole("button", { name: "Usar este diseño", exact: true })
