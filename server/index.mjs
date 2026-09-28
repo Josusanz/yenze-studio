@@ -87,9 +87,13 @@ function reply(res, data, status = 200) {
 async function raw(req, max = 28 * 1024 * 1024) {
   const chunks = [];
   let n = 0;
-  for await (const chunk of req) {
+  for await (const chunk of req.iterator({ destroyOnReturn: false })) {
     n += chunk.length;
-    if (n > max) fail("Archivo demasiado grande.", 413);
+    if (n > max) {
+      // Keep the response writable so clients receive a useful 413, not ECONNRESET.
+      req.resume();
+      fail("Archivo demasiado grande.", 413);
+    }
     chunks.push(chunk);
   }
   return Buffer.concat(chunks);
