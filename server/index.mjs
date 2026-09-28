@@ -96,13 +96,14 @@ async function raw(req, max = 28 * 1024 * 1024) {
 }
 async function body(req) {
   try {
+    const pathname = new URL(req.url, "http://localhost").pathname;
     const parsed = JSON.parse(
       (
         await raw(
           req,
-          req.url === "/api/assets" ||
+          pathname === "/api/assets" ||
             /^\/api\/(public|products)\/[a-f0-9]{32}\/print-assets$/.test(
-              req.url,
+              pathname,
             )
             ? 28 * 1024 * 1024
             : 1024 * 1024,

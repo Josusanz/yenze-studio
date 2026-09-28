@@ -2,7 +2,7 @@ import { DatabaseSync } from "node:sqlite";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import sharp from "sharp";
@@ -82,6 +82,18 @@ test("Tenant isolation, publishing, immutable configurations and quote lifecycle
     email: "buyer@example.com",
     password: "safepassword123",
   });
+  // Upload routing and request-size routing must agree even with query strings.
+  const modelData = readFileSync(
+    new URL("../public/models/atelier-shirt-v2.glb", import.meta.url),
+  ).toString("base64");
+  const importedModel = await admin(
+    "/assets?source=onboarding",
+    "POST",
+    { name: "shirt.glb", data: modelData },
+    201,
+  );
+  assert.ok(importedModel.id);
+  await admin("/products?source=onboarding", "POST", { data: modelData }, 413);
   let p = await admin("/products", "POST", { template: "cabinet" }, 201);
   await other("/products/" + p.id, "GET", undefined, 404);
   const check = await admin("/products/" + p.id + "/check-publish", "POST", {
