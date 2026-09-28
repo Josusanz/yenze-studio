@@ -150,13 +150,16 @@ test("A conflicting server edit is never overwritten by autosave or recovery", a
   page,
 }) => {
   const p = await setup(page, "conflict@confidence.test");
-  await page.request.patch("/api/products/" + p.id, {
+  // The editor must hold the old revision before another session updates it.
+  await expect(page.getByLabel("Nombre del producto")).toHaveValue(p.draft.name);
+  const remoteEdit = await page.request.patch("/api/products/" + p.id, {
     data: {
       revision: p.revision,
       manifest: { ...p.draft, name: "Cambio desde otra sesión" },
       mode: "quote",
     },
   });
+  expect(remoteEdit.status()).toBe(200);
   await page.getByLabel("Nombre del producto").fill("Mi cambio local");
   await expect(page.locator(".editor-save-warning")).toContainText(
     "Hay cambios más recientes",
