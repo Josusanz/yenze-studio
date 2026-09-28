@@ -27,10 +27,9 @@ export function payments({
         { idempotencyKey: "org-" + org.id },
       );
       account = created.id;
-      db.prepare("UPDATE organizations SET stripe_account=? WHERE id=?").run(
-        account,
-        org.id,
-      );
+      await db
+        .prepare("UPDATE organizations SET stripe_account=? WHERE id=?")
+        .run(account, org.id);
     }
     const link = await client.accountLinks.create({
       account,
@@ -68,10 +67,12 @@ export function payments({
       if (session.status === "open" && session.url) return { url: session.url };
       if (session.status === "complete")
         fail("El pago está en proceso de confirmación.", 409);
-      db.prepare(
-        "UPDATE orders SET checkout_id=NULL,checkout_url=NULL,offer_revision=offer_revision+1 WHERE id=? AND checkout_id=?",
-      ).run(order.id, order.checkout_id);
-      order = db.prepare("SELECT * FROM orders WHERE id=?").get(order.id);
+      await db
+        .prepare(
+          "UPDATE orders SET checkout_id=NULL,checkout_url=NULL,offer_revision=offer_revision+1 WHERE id=? AND checkout_id=?",
+        )
+        .run(order.id, order.checkout_id);
+      order = await db.prepare("SELECT * FROM orders WHERE id=?").get(order.id);
     }
     const a = await client.accounts.retrieve(org.stripe_account);
     if (!a.charges_enabled)
@@ -107,12 +108,14 @@ export function payments({
         idempotencyKey: `order-${order.id}-${order.offer_revision}`,
       },
     );
-    db.prepare(
-      "UPDATE orders SET checkout_id=?,checkout_url=?,updated=? WHERE id=?",
-    ).run(session.id, session.url, now(), order.id);
+    await db
+      .prepare(
+        "UPDATE orders SET checkout_id=?,checkout_url=?,updated=? WHERE id=?",
+      )
+      .run(session.id, session.url, now(), order.id);
     return { url: session.url };
   }
-  function webhook(raw, signature) {
+  async function webhook(raw, signature) {
     if (!stripe || !webhookSecret) fail("Webhook no configurado.", 503);
     let event;
     try {
@@ -120,10 +123,10 @@ export function payments({
     } catch {
       fail("Firma de Stripe no válida.", 400);
     }
-    if (db.prepare("SELECT id FROM events WHERE id=?").get(event.id))
+    if (await db.prepare("SELECT id FROM events WHERE id=?").get(event.id))
       return { received: true };
     const object = event.data.object;
-    db.exec("BEGIN IMMEDIATE");
+    await db.exec("BEGIN IMMEDIATE");
     try {
       if (
         [
@@ -132,11 +135,11 @@ export function payments({
         ].includes(event.type) &&
         object.payment_status === "paid"
       ) {
-        const order = db
+        const order = await db
           .prepare("SELECT * FROM orders WHERE id=?")
           .get(object.metadata?.order || "");
         if (!order) fail("Pedido todavía no disponible.", 409);
-        const org = db
+        const org = await db
           .prepare("SELECT * FROM organizations WHERE id=?")
           .get(order.org_id);
         if (
@@ -149,27 +152,27 @@ export function payments({
         if (order.checkout_id && order.checkout_id !== object.id)
           fail("Sesión de pago incorrecta.", 400);
         if (order.status === "accepted")
-          db.prepare(
-            "UPDATE orders SET status=?,checkout_id=?,payment_intent=?,updated=? WHERE id=?",
-          ).run("paid", object.id, object.payment_intent, now(), order.id);
-        audit(org.id, "stripe", "payment.confirmed", order.id);
+          await db
+            .prepare(
+              "UPDATE orders SET status=?,checkout_id=?,payment_intent=?,updated=? WHERE id=?",
+            )
+            .run("paid", object.id, object.payment_intent, now(), order.id);
+        await audit(org.id, "stripe", "payment.confirmed", order.id);
       }
       if (event.type === "charge.refunded") {
-        const order = db
+        const order = await db
           .prepare("SELECT * FROM orders WHERE payment_intent=?")
           .get(object.payment_intent || "");
         if (order) {
-          const org = db
+          const org = await db
             .prepare("SELECT * FROM organizations WHERE id=?")
             .get(order.org_id);
           if (org.stripe_account !== event.account) fail("Cuenta incorrecta.");
           if (object.refunded)
-            db.prepare("UPDATE orders SET status=?,updated=? WHERE id=?").run(
-              "refunded",
-              now(),
-              order.id,
-            );
-          audit(
+            await db
+              .prepare("UPDATE orders SET status=?,updated=? WHERE id=?")
+              .run("refunded", now(), order.id);
+          await audit(
             org.id,
             "stripe",
             object.refunded ? "payment.refunded" : "payment.partial_refund",
@@ -177,11 +180,11 @@ export function payments({
           );
         }
       }
-      db.prepare("INSERT INTO events VALUES(?,?)").run(event.id, now());
-      db.exec("COMMIT");
+      await db.prepare("INSERT INTO events VALUES(?,?)").run(event.id, now());
+      await db.exec("COMMIT");
       return { received: true };
     } catch (e) {
-      db.exec("ROLLBACK");
+      await db.exec("ROLLBACK");
       throw e;
     }
   }

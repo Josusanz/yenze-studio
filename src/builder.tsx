@@ -1,3 +1,4 @@
+import { uploadLimitMB } from "./upload-limits";
 import { useState, useEffect } from "react";
 import {
   Plus,
@@ -117,8 +118,11 @@ export function BuilderPanel({
   };
   const readImages = async (files: File[], target?: any) => {
     if (!files.length) return;
-    if (files.length > 100 || files.some((f) => f.size > 20 * 1024 * 1024))
-      throw Error("Hasta 100 imágenes de 20 MB por importación.");
+    if (
+      files.length > 100 ||
+      files.some((f) => f.size > uploadLimitMB * 1024 * 1024)
+    )
+      throw Error(`Hasta 100 imágenes de ${uploadLimitMB} MB por importación.`);
     const effect = target
       ? effectOf(m, target)
       : m.kind === "images-2d"
@@ -545,7 +549,7 @@ export function BuilderPanel({
                 <strong>
                   {m.model ? "Reemplazar modelo 3D" : "Subir mi modelo 3D"}
                 </strong>
-                <span>GLB autocontenido · hasta 20 MB</span>
+                <span>GLB autocontenido · hasta {uploadLimitMB} MB</span>
                 <input
                   aria-label="Subir modelo GLB"
                   type="file"

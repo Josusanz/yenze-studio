@@ -105,6 +105,7 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
     ? new URL(configuredCreator).origin
     : "";
   const creatorAvailable = !standalone || !!creatorOrigin;
+  const onlineBeta = import.meta.env.VITE_HOSTED === "true" || !!creatorOrigin;
   const creatorBase = standalone ? creatorOrigin : "";
   const languageQuery = `&lang=${getLanguage()}`;
   const start = creatorAvailable
@@ -305,7 +306,11 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
           <div className="product-offers">
             <article>
               <span className="offer-status">
-                {t("DISPONIBLE · BETA AUTOALOJADA")}
+                {t(
+                  onlineBeta
+                    ? "DISPONIBLE · BETA ONLINE GRATUITA"
+                    : "DISPONIBLE · BETA AUTOALOJADA",
+                )}
               </span>
               <span className="offer-name">Yenze Studio</span>
               <h3>{t("Necesito crear un configurador")}</h3>
@@ -355,7 +360,9 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
           </div>
           <p className="product-availability">
             {t(
-              "Código abierto, sin cuota de licencia del motor. El alojamiento y los servicios externos corren por tu cuenta.",
+              onlineBeta
+                ? "Crea tu cuenta y prueba Studio gratis en la beta online. También puedes instalar el proyecto en tu propia infraestructura."
+                : "Código abierto, sin cuota de licencia del motor. El alojamiento y los servicios externos corren por tu cuenta.",
             )}
           </p>
         </section>
@@ -866,25 +873,58 @@ export default function Landing({ loggedIn = false, standalone = false }: any) {
             </article>
             <article>
               <span className="ownership-label">
-                {t("EN PREPARACIÓN · SERVICIO GESTIONADO")}
+                {t(
+                  onlineBeta
+                    ? "DISPONIBLE · BETA ONLINE GRATUITA"
+                    : "EN PREPARACIÓN · SERVICIO GESTIONADO",
+                )}
               </span>
               <h3>
                 {t("Céntrate en crear.")}
                 <br />
-                {t("Con ayuda al otro lado.")}
+                {t(
+                  onlineBeta ? "Sin instalar nada." : "Con ayuda al otro lado.",
+                )}
               </h3>
               <p>
                 {t(
-                  "Estamos preparando una oferta de alojamiento, copias, almacenamiento y soporte para quienes prefieran delegar la operación.",
+                  onlineBeta
+                    ? "Crea tu cuenta, abre una plantilla y publica tu primer configurador. Tus proyectos se guardan en tu espacio de trabajo."
+                    : "Estamos preparando una oferta de alojamiento, copias, almacenamiento y soporte para quienes prefieran delegar la operación.",
                 )}
               </p>
               <ul>
-                <li>{t("Validación primero con negocios piloto")}</li>
-                <li>{t("Adaptación e integración según el proyecto")}</li>
-                <li>{t("Precios y disponibilidad todavía sin anunciar")}</li>
+                <li>
+                  {t(
+                    onlineBeta
+                      ? "Constructor y panel de gestión incluidos"
+                      : "Validación primero con negocios piloto",
+                  )}
+                </li>
+                <li>
+                  {t(
+                    onlineBeta
+                      ? "Hasta 3 MB por archivo en la beta online"
+                      : "Adaptación e integración según el proyecto",
+                  )}
+                </li>
+                <li>
+                  {t(
+                    onlineBeta
+                      ? "Pagos y correo pendientes de activación"
+                      : "Precios y disponibilidad todavía sin anunciar",
+                  )}
+                </li>
               </ul>
-              <a className="m-link" href="/community.html">
-                {t("Conoce el estado del proyecto")}
+              <a
+                className="m-link"
+                href={onlineBeta ? start : "/community.html"}
+              >
+                {t(
+                  onlineBeta
+                    ? "Crear mi cuenta gratis"
+                    : "Conoce el estado del proyecto",
+                )}
                 <ArrowUpRight size={16} />
               </a>
             </article>

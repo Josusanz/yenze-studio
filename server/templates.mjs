@@ -163,7 +163,7 @@ export const templates = [
     groups: [],
   },
 ];
-export function makeTemplate(id, storeAsset) {
+export async function makeTemplate(id, storeAsset) {
   const t = templates.find((t) => t.id === id);
   if (!t) throw Error("Plantilla no encontrada.");
   const manifest = {
@@ -189,7 +189,7 @@ export function makeTemplate(id, storeAsset) {
     model: null,
   };
   if (id === "shirt-3d") {
-    manifest.model = storeAsset(
+    manifest.model = await storeAsset(
       readFileSync(
         new URL("../public/models/atelier-shirt-v2.glb", import.meta.url),
       ),
@@ -244,21 +244,30 @@ export function makeTemplate(id, storeAsset) {
     ];
     return manifest;
   }
-  manifest.groups = t.groups.map((g, n) => ({
-    ...g,
-    order: n,
-    required: true,
-    default: g.options[0].id,
-    options: g.options.map((o) => ({
-      ...o,
-      assets: {
-        frontal: storeAsset(
-          Buffer.from(t.render[n](o.color)),
-          "image/svg+xml",
-          `${g.id}-${o.id}.svg`,
-        ),
-      },
-    })),
-  }));
+  // Keep writes sequential inside the caller's transaction: a failed upload must
+  // not leave queued writes running after rollback, and each quota sees prior assets.
+  manifest.groups = [];
+  for (const [n, g] of t.groups.entries()) {
+    const options = [];
+    for (const o of g.options) {
+      options.push({
+        ...o,
+        assets: {
+          frontal: await storeAsset(
+            Buffer.from(t.render[n](o.color)),
+            "image/svg+xml",
+            `${g.id}-${o.id}.svg`,
+          ),
+        },
+      });
+    }
+    manifest.groups.push({
+      ...g,
+      order: n,
+      required: true,
+      default: g.options[0].id,
+      options,
+    });
+  }
   return manifest;
 }

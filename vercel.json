@@ -1,0 +1,17 @@
+{
+  "framework": null,
+  "buildCommand": "VITE_HOSTED=true npm run build",
+  "outputDirectory": "dist",
+  "regions": ["fra1"],
+  "functions": {
+    "api/index.mjs": {
+      "maxDuration": 60,
+      "includeFiles": "{public/models/**,dist/**}"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api" },
+    { "source": "/p/:path*", "destination": "/api" },
+    { "source": "/", "destination": "/api" }
+  ]
+}

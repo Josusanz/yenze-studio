@@ -4,9 +4,9 @@ import { industries, setupGroups } from "../core/industries.mjs";
 import { validatePrint } from "../core/print-design.mjs";
 import { makeTemplate } from "../server/templates.mjs";
 import { evaluateProduct, validManifest } from "../server/validation.mjs";
-test("All sectors create valid editable question groups, rejecting malformed and ambiguous answers", () => {
+test("All sectors create valid editable question groups, rejecting malformed and ambiguous answers", async () => {
   for (const sector of industries) {
-    const m = makeTemplate("guided", () => {});
+    const m = await makeTemplate("guided", async () => {});
     m.groups = setupGroups({
       industry: sector.id,
       name: "Producto",
@@ -36,8 +36,8 @@ test("All sectors create valid editable question groups, rejecting malformed and
       }),
     );
 });
-test("Personalization is preserved in price evaluation and rejects remote images and excessive documents", () => {
-  const m = makeTemplate("shirt-3d", () => "asset");
+test("Personalization is preserved in price evaluation and rejects remote images and excessive documents", async () => {
+  const m = await makeTemplate("shirt-3d", () => "asset");
   validManifest(m, () => true, { publish: true });
   const d = structuredClone(m.personalization.design);
   d.layers.push({
@@ -75,8 +75,8 @@ test("Personalization is preserved in price evaluation and rejects remote images
   );
 });
 
-test("Versioned shirt templates use the detailed model while old snapshots still validate", () => {
-  const m = makeTemplate("shirt-3d", () => "asset");
+test("Versioned shirt templates use the detailed model while old snapshots still validate", async () => {
+  const m = await makeTemplate("shirt-3d", () => "asset");
   assert.equal(m.personalization.model, "atelier-shirt-v2");
   assert.equal(m.groups[0].material, "Cotton");
   validManifest(m, () => true, { publish: true });
@@ -85,8 +85,8 @@ test("Versioned shirt templates use the detailed model while old snapshots still
   validManifest(m, () => true, { publish: true });
 });
 
-test("Clean start removes only retired starter text, preserving edited text and legacy snapshots", () => {
-  const m = makeTemplate("shirt-3d", () => "asset");
+test("Clean start removes only retired starter text, preserving edited text and legacy snapshots", async () => {
+  const m = await makeTemplate("shirt-3d", () => "asset");
   assert.deepEqual(m.personalization.design.layers, []);
   const starter = {
     id: "studio_text",

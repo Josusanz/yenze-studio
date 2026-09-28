@@ -1,12 +1,14 @@
 # Yenze Studio
 
+**Online beta:** [Open Yenze Studio](https://studio.yenze.io) · [Create an account](https://studio.yenze.io/?page=signup&new=1) · [Vercel deployment guide](docs/VERCEL.md)
+
 [Live demo](https://yenze-studio-open-beta.vercel.app) · [Download beta](https://github.com/Josusanz/yenze-studio/releases)
 
 **Make it theirs. Keep it yours.**
 
 An open-source product configurator builder for 2D images, layered artwork, GLB models and services that need no images at all. Build choices, show a live preview, collect requests and keep the exact configuration attached to each order.
 
-**Open beta · AGPL-3.0-only · Self-hosted**
+**Open beta · AGPL-3.0-only · Online beta and self-hosting**
 
 [Get started](#quick-start) · [Documentation](docs/README.es.md) · [Roadmap](ROADMAP.md) · [Report a problem](https://github.com/Josusanz/yenze-studio/issues/new/choose) · [Contribute](CONTRIBUTING.md)
 

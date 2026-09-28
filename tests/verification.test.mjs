@@ -8,7 +8,7 @@ test("Email verification uses expiring hashed single-use tokens and rolls back f
     "CREATE TABLE users(id TEXT PRIMARY KEY);INSERT INTO users VALUES('u');INSERT INTO users VALUES('v');",
   );
   let html = "";
-  const service = emailVerification(db, {
+  const service = await emailVerification(db, {
     origin: "https://studio.example",
     enabled: () => true,
     mail: async (to, subject, body) => {
@@ -25,16 +25,16 @@ test("Email verification uses expiring hashed single-use tokens and rolls back f
       token,
     );
     await assert.rejects(service.send(user), /Espera un minuto/);
-    assert.equal(service.verified("u"), false);
-    service.confirm(token);
-    assert.equal(service.verified("u"), true);
-    assert.equal(service.verified("v"), false);
-    assert.throws(() => service.confirm(token), /caducado/);
+    assert.equal(await service.verified("u"), false);
+    await service.confirm(token);
+    assert.equal(await service.verified("u"), true);
+    assert.equal(await service.verified("v"), false);
+    await assert.rejects(() => service.confirm(token), /caducado/);
     await service.send({ id: "v", email: "second@example.test" });
     const expired = html.match(/verify=([a-f0-9]{64})/)[1];
     db.prepare("UPDATE email_verifications SET expires=0").run();
-    assert.throws(() => service.confirm(expired), /caducado/);
-    const failing = emailVerification(db, {
+    await assert.rejects(() => service.confirm(expired), /caducado/);
+    const failing = await emailVerification(db, {
       origin: "https://studio.example",
       enabled: () => true,
       mail: async () => {

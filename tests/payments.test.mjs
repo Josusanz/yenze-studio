@@ -18,7 +18,7 @@ function fixture(t) {
   );
   return db;
 }
-test("Signed Stripe events: account, amount, signature, idempotency and refund", (t) => {
+test("Signed Stripe events: account, amount, signature, idempotency and refund", async (t) => {
   const db = fixture(t),
     sdk = new Stripe("sk_test_fixture"),
     secret = "whsec_fixture",
@@ -53,26 +53,29 @@ test("Signed Stripe events: account, amount, signature, idempotency and refund",
       sdk.webhooks.generateTestHeaderString({ payload, secret }),
     );
   };
-  assert.throws(
+  await assert.rejects(
     () => pay.webhook(Buffer.from(JSON.stringify(event)), "invalid"),
     /Firma/,
   );
-  assert.throws(() => send({ ...event, account: "acct_other" }), /coincide/);
+  await assert.rejects(
+    () => send({ ...event, account: "acct_other" }),
+    /coincide/,
+  );
   assert.equal(order().status, "accepted");
   const wrong = structuredClone(event);
   wrong.data.object.amount_total = 1;
-  assert.throws(() => send(wrong), /coincide/);
+  await assert.rejects(() => send(wrong), /coincide/);
   assert.equal(db.prepare("SELECT count(*) n FROM events").get().n, 0);
   const unpaid = structuredClone(event);
   unpaid.id = "evt_unpaid";
   unpaid.data.object.payment_status = "unpaid";
-  send(unpaid);
+  await send(unpaid);
   assert.equal(order().status, "accepted");
-  send(event);
-  send(event);
+  await send(event);
+  await send(event);
   assert.equal(order().status, "paid");
   assert.equal(db.prepare("SELECT count(*) n FROM events").get().n, 2);
-  send({
+  await send({
     id: "evt_refund",
     type: "charge.refunded",
     account: "acct_shop",

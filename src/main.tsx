@@ -1,3 +1,4 @@
+import { checkUpload, uploadLimitMB } from "./upload-limits";
 import { downloadProduction } from "./production-download";
 import { parentOrigin, useEmbed } from "./embed";
 import { TextileButton } from "./textile";
@@ -830,6 +831,7 @@ function Editor({ id, run, notify }: any) {
     }
   };
   const upload = async (file: File) => {
+    checkUpload(file);
     const data = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(String(reader.result).split(",")[1]);
@@ -881,8 +883,11 @@ function Editor({ id, run, notify }: any) {
   };
   const folder = async (files: File[]) => {
     if (!files.length) return;
-    if (files.length > 500 || files.some((f) => f.size > 20 * 1024 * 1024))
-      throw Error("Máximo 500 archivos de hasta 20 MB.");
+    if (
+      files.length > 500 ||
+      files.some((f) => f.size > uploadLimitMB * 1024 * 1024)
+    )
+      throw Error(`Máximo 500 archivos de hasta ${uploadLimitMB} MB.`);
     setUploading("Analizando las capas…");
     try {
       const root = files[0].webkitRelativePath.split("/")[0];

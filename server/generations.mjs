@@ -14,8 +14,8 @@ export function generations({
 }) {
   const active = new Set();
   const enabled = (org) => !!key && allowed.includes(org);
-  const row = (org, id) => {
-    const r = db
+  const row = async (org, id) => {
+    const r = await db
       .prepare("SELECT * FROM generations WHERE id=? AND org_id=?")
       .get(id, org);
     if (!r) fail("Generación no encontrada.", 404);
@@ -57,7 +57,7 @@ export function generations({
       b.consent !== true
     )
       fail("Confirma el envío de las fotos y el uso de créditos.");
-    const old = db
+    const old = await db
       .prepare("SELECT * FROM generations WHERE org_id=? AND request_key=?")
       .get(org, b.requestKey);
     if (old) return old;
@@ -65,7 +65,7 @@ export function generations({
       fail("Elige entre una y cuatro fotos del mismo producto.");
     const images = [];
     for (const id of b.assets) {
-      const asset = db
+      const asset = await db
         .prepare("SELECT * FROM assets WHERE id=? AND org_id=?")
         .get(id, org);
       if (!asset || asset.mime !== "image/webp")
@@ -82,23 +82,27 @@ export function generations({
         .toBuffer();
       images.push("data:image/jpeg;base64," + bytes.toString("base64"));
     }
-    const again = db
+    const again = await db
       .prepare("SELECT * FROM generations WHERE org_id=? AND request_key=?")
       .get(org, b.requestKey);
     if (again) return again;
     const since = new Date(Date.now() - 86400000).toISOString();
     if (
-      db
-        .prepare(
-          "SELECT count(*) n FROM generations WHERE org_id=? AND created>?",
-        )
-        .get(org, since).n >= 3
+      (
+        await db
+          .prepare(
+            "SELECT count(*) n FROM generations WHERE org_id=? AND created>?",
+          )
+          .get(org, since)
+      ).n >= 3
     )
       fail("Límite de tres generaciones por empresa cada 24 horas.", 429);
     const id = uid();
-    db.prepare(
-      "INSERT INTO generations(id,org_id,request_key,status,created) VALUES(?,?,?,?,?)",
-    ).run(id, org, b.requestKey, "SUBMITTING", now());
+    await db
+      .prepare(
+        "INSERT INTO generations(id,org_id,request_key,status,created) VALUES(?,?,?,?,?)",
+      )
+      .run(id, org, b.requestKey, "SUBMITTING", now());
     try {
       const r = await provider(endpoint, {
         method: "POST",
@@ -117,21 +121,20 @@ export function generations({
         !/^[a-zA-Z0-9-]{1,100}$/.test(r.result)
       )
         fail("Respuesta de generación no válida.", 502);
-      db.prepare(
-        "UPDATE generations SET provider_id=?,status=? WHERE id=?",
-      ).run(r.result, "PENDING", id);
-      audit(org, actor, "generation.created", id);
-      return row(org, id);
+      await db
+        .prepare("UPDATE generations SET provider_id=?,status=? WHERE id=?")
+        .run(r.result, "PENDING", id);
+      await audit(org, actor, "generation.created", id);
+      return await row(org, id);
     } catch (e) {
-      db.prepare("UPDATE generations SET status=? WHERE id=?").run(
-        "UNCONFIRMED",
-        id,
-      );
+      await db
+        .prepare("UPDATE generations SET status=? WHERE id=?")
+        .run("UNCONFIRMED", id);
       throw e;
     }
   }
   async function retrieve(org, id) {
-    const r = row(org, id);
+    const r = await row(org, id);
     if (!enabled(org)) fail("Proveedor no disponible para esta empresa.", 503);
     if (!r.provider_id || r.asset_id) return { stored: r, remote: null };
     const remote = await provider(
@@ -143,12 +146,14 @@ export function generations({
       )
     )
       fail("Estado del proveedor no reconocido.", 502);
-    db.prepare("UPDATE generations SET status=?,progress=? WHERE id=?").run(
-      remote.status,
-      Math.max(0, Math.min(100, Number(remote.progress) || 0)),
-      id,
-    );
-    return { stored: row(org, id), remote };
+    await db
+      .prepare("UPDATE generations SET status=?,progress=? WHERE id=?")
+      .run(
+        remote.status,
+        Math.max(0, Math.min(100, Number(remote.progress) || 0)),
+        id,
+      );
+    return { stored: await row(org, id), remote };
   }
   async function get(org, id) {
     const { stored, remote } = await retrieve(org, id);
@@ -166,7 +171,7 @@ export function generations({
     try {
       const { stored, remote } = await retrieve(org, id);
       if (stored.asset_id) {
-        const a = db
+        const a = await db
           .prepare("SELECT id,meta FROM assets WHERE id=? AND org_id=?")
           .get(stored.asset_id, org);
         return { id: a.id, ...JSON.parse(a.meta) };
@@ -202,22 +207,26 @@ export function generations({
         chunks.push(chunk);
       }
       const parsed = await parseAsset(Buffer.concat(chunks), "generated.glb");
-      const usage = db
-        .prepare(
-          "SELECT coalesce(sum(length(bytes)),0) n FROM assets WHERE org_id=?",
-        )
-        .get(org).n;
+      const usage = (
+        await db
+          .prepare(
+            "SELECT coalesce(sum(length(bytes)),0) n FROM assets WHERE org_id=?",
+          )
+          .get(org)
+      ).n;
       if (usage + parsed.bytes.length > 250 * 1024 * 1024)
         fail("No queda espacio para el modelo.", 413);
-      const asset = storeAsset(
+      const asset = await storeAsset(
         org,
         parsed.bytes,
         parsed.mime,
         "generated.glb",
         parsed.meta,
       );
-      db.prepare("UPDATE generations SET asset_id=? WHERE id=?").run(asset, id);
-      audit(org, actor, "generation.imported", id);
+      await db
+        .prepare("UPDATE generations SET asset_id=? WHERE id=?")
+        .run(asset, id);
+      await audit(org, actor, "generation.imported", id);
       return { id: asset, ...parsed.meta };
     } finally {
       active.delete(id);

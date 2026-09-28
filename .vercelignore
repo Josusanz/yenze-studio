@@ -1,0 +1,10 @@
+.env*
+data
+artifacts
+test-results
+playwright-report
+dist-showcase
+node_modules
+.git
+*.sqlite*
+public/downloads/*.zip

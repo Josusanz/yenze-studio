@@ -1,3 +1,4 @@
+import { checkUpload, printLimitMB } from "./upload-limits";
 import { useEffect, useRef, useState, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -152,6 +153,7 @@ function TextileEditor({ m, s, productId, merchant, close, apply }: any) {
     setWorking(true);
     setError("");
     try {
+      checkUpload(f, printLimitMB);
       const src = await normalizePrintImage(f);
       if (!productId)
         throw Error("Guarda el producto antes de subir un original.");
@@ -307,7 +309,7 @@ function TextileEditor({ m, s, productId, merchant, close, apply }: any) {
           />
           <small>
             También puedes soltar una imagen sobre la prenda. PNG, JPG o WebP ·
-            hasta 10 MB.
+            hasta {printLimitMB} MB.
           </small>
           <div className="textile-layer-list">
             <span className="eyebrow">

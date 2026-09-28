@@ -1,20 +1,22 @@
 import { randomBytes, createHash } from "node:crypto";
 import { fail } from "./validation.mjs";
-export function emailVerification(db, { mail, origin, enabled }) {
-  db.exec(`CREATE TABLE IF NOT EXISTS email_verified(user_id TEXT PRIMARY KEY REFERENCES users(id),verified_at TEXT NOT NULL);
+export async function emailVerification(db, { mail, origin, enabled }) {
+  await db.exec(`CREATE TABLE IF NOT EXISTS email_verified(user_id TEXT PRIMARY KEY REFERENCES users(id),verified_at TEXT NOT NULL);
   CREATE TABLE IF NOT EXISTS email_verifications(token TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id),expires INTEGER NOT NULL);`);
   const digest = (s) => createHash("sha256").update(s).digest("hex");
-  const verified = (userId) =>
-    !!db.prepare("SELECT 1 FROM email_verified WHERE user_id=?").get(userId);
+  const verified = async (userId) =>
+    !!(await db
+      .prepare("SELECT 1 FROM email_verified WHERE user_id=?")
+      .get(userId));
   async function send(user) {
-    if (verified(user.id)) return { verified: true };
+    if (await verified(user.id)) return { verified: true };
     if (!enabled())
       fail("La verificación por correo todavía no está configurada.", 503);
     const token = randomBytes(32).toString("hex");
-    db.prepare("DELETE FROM email_verifications WHERE expires<?").run(
-      Date.now(),
-    );
-    const previous = db
+    await db
+      .prepare("DELETE FROM email_verifications WHERE expires<?")
+      .run(Date.now());
+    const previous = await db
       .prepare(
         "SELECT expires FROM email_verifications WHERE user_id=? ORDER BY expires DESC LIMIT 1",
       )
@@ -23,11 +25,9 @@ export function emailVerification(db, { mail, origin, enabled }) {
       fail("Espera un minuto antes de pedir otro enlace.", 429);
     // Retain older valid links until one succeeds; an email provider outage must not revoke a delivered link.
     const hashed = digest(token);
-    db.prepare("INSERT INTO email_verifications VALUES(?,?,?)").run(
-      hashed,
-      user.id,
-      Date.now() + 24 * 3600000,
-    );
+    await db
+      .prepare("INSERT INTO email_verifications VALUES(?,?,?)")
+      .run(hashed, user.id, Date.now() + 24 * 3600000);
     try {
       if (
         !(await mail(
@@ -38,15 +38,17 @@ export function emailVerification(db, { mail, origin, enabled }) {
       )
         throw Error("No se pudo enviar el correo.");
     } catch (e) {
-      db.prepare("DELETE FROM email_verifications WHERE token=?").run(hashed);
+      await db
+        .prepare("DELETE FROM email_verifications WHERE token=?")
+        .run(hashed);
       throw e;
     }
     return { sent: true };
   }
-  function confirm(token) {
+  async function confirm(token) {
     if (typeof token !== "string" || !/^[a-f0-9]{64}$/.test(token))
       fail("El enlace de verificación no es válido.");
-    const row = db
+    const row = await db
       .prepare("SELECT * FROM email_verifications WHERE token=? AND expires>?")
       .get(digest(token), Date.now());
     if (!row)
@@ -54,18 +56,17 @@ export function emailVerification(db, { mail, origin, enabled }) {
         "El enlace ha caducado o ya se ha utilizado. Solicita uno nuevo.",
         409,
       );
-    db.exec("BEGIN IMMEDIATE");
+    await db.exec("BEGIN IMMEDIATE");
     try {
-      db.prepare("INSERT OR IGNORE INTO email_verified VALUES(?,?)").run(
-        row.user_id,
-        new Date().toISOString(),
-      );
-      db.prepare("DELETE FROM email_verifications WHERE user_id=?").run(
-        row.user_id,
-      );
-      db.exec("COMMIT");
+      await db
+        .prepare("INSERT OR IGNORE INTO email_verified VALUES(?,?)")
+        .run(row.user_id, new Date().toISOString());
+      await db
+        .prepare("DELETE FROM email_verifications WHERE user_id=?")
+        .run(row.user_id);
+      await db.exec("COMMIT");
     } catch (e) {
-      db.exec("ROLLBACK");
+      await db.exec("ROLLBACK");
       throw e;
     }
     return { verified: true };
