@@ -3484,3 +3484,236 @@ input[type="checkbox"] {
 .onboarding-guide > button {
   margin-top: 14px;
 }
+
+.start-help {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin: 24px 0;
+  background: #f6f8fa;
+}
+.start-help summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+.start-help > p {
+  font-size: 14px;
+  margin: 16px 0;
+}
+.start-help-answers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.start-help-answers button {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+.start-help-answers svg {
+  flex-shrink: 0;
+}
+.start-recommendation {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.start-recommendation p {
+  font-size: 14px;
+  margin: 8px 0;
+}
+.start-recommendation small {
+  color: var(--muted);
+}
+.choice-guide {
+  outline: none;
+}
+.choice-guide > .eyebrow {
+  display: block;
+  margin-top: 26px;
+}
+.choice-guide h2 {
+  font-size: 28px;
+  line-height: 1.2;
+  margin: 12px 0;
+}
+.choice-guide > p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.choice-intents {
+  display: grid;
+  gap: 8px;
+  margin: 22px 0;
+}
+.choice-intents button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: white;
+  padding: 14px;
+  text-align: left;
+}
+.choice-intents button > svg {
+  flex-shrink: 0;
+}
+.choice-intents button span {
+  flex: 1;
+}
+.choice-intents strong,
+.choice-intents small {
+  display: block;
+}
+.choice-intents small {
+  font-size: 12px;
+  line-height: 1.5;
+  margin-top: 4px;
+  color: var(--muted);
+}
+.choice-intents button.active {
+  background: #eef3f7;
+  border-color: #8199ad;
+}
+.choice-intents button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.guided-answers {
+  display: grid;
+  gap: 10px;
+}
+.guided-answer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 80px 26px;
+  align-items: end;
+  gap: 8px;
+  padding: 12px;
+  background: #f7f8fa;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.guided-answer label {
+  margin: 0;
+  font-size: 11px;
+  min-width: 0;
+}
+.guided-answer input,
+.guided-answer select {
+  padding: 9px;
+  margin-top: 5px;
+  min-width: 0;
+  width: 100%;
+}
+.guided-answer > label:nth-child(n + 3) {
+  grid-column: 1 / 3;
+}
+.guided-answer > button {
+  grid-column: 3;
+  grid-row: 1;
+  margin-bottom: 3px;
+}
+.choice-sample {
+  margin: 24px 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px;
+  background: white;
+}
+.choice-sample > strong {
+  display: block;
+  margin: 12px 0;
+}
+.choice-sample button {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.choice-sample button.active {
+  border-color: var(--ink);
+  background: #f3f6f8;
+}
+.choice-sample button span {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.choice-sample button i {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.choice-sample small,
+.choice-sample p {
+  font-size: 11px;
+  color: var(--muted);
+}
+.choice-sample p {
+  margin: 14px 0 0;
+  line-height: 1.6;
+}
+.choice-guide-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 0;
+  position: sticky;
+  bottom: 0;
+  background: white;
+  border-top: 1px solid var(--line);
+}
+.choice-guide-actions .primary {
+  padding: 13px 16px;
+}
+.builder-next-step {
+  margin: 18px 0;
+  padding: 16px;
+  border-radius: 12px;
+  background: #f1f5f7;
+}
+.builder-next-step strong {
+  font-size: 14px;
+}
+.builder-next-step p {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 7px 0 12px;
+}
+@media (max-width: 600px) {
+  .start-help-answers {
+    grid-template-columns: 1fr;
+  }
+}
+.choice-effect-note {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 12px 0;
+}
+.choice-selected-kind {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}

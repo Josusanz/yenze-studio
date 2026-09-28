@@ -57,6 +57,7 @@ export default function Start({ create, templates }: any) {
     [search, setSearch] = useState("");
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
+  const [recommendation, setRecommendation] = useState("");
   const [storageFailed, setStorageFailed] = useState(false);
   useEffect(() => {
     try {
@@ -321,6 +322,63 @@ export default function Start({ create, templates }: any) {
             Elige tu punto de partida. En el siguiente paso subirás los archivos
             o trabajarás directamente sobre el producto.
           </p>
+          <details className="start-help">
+            <summary>No sé qué elegir · ayúdame</summary>
+            <p>¿Qué tienes ahora mismo? Te indicamos el camino que encaja.</p>
+            <div className="start-help-answers">
+              {[
+                {
+                  label: "Fotos normales de mi producto",
+                  source: "images",
+                  why: "Empieza por las fotos. No hace falta recortarlas en piezas; cada imagen puede representar una variante.",
+                },
+                {
+                  label: "Imágenes transparentes de sus piezas",
+                  source: "empty",
+                  why: "Las capas se superponen. Usa imágenes con las mismas dimensiones y cada pieza en su posición.",
+                },
+                {
+                  label: "Un archivo con extensión .glb",
+                  source: "model",
+                  why: "Importa el archivo para ver su modelo, piezas y materiales. Después decidirás qué cambia.",
+                },
+                {
+                  label: "Todavía no tengo archivos",
+                  source:
+                    type === "textile"
+                      ? "shirt-3d"
+                      : type === "furniture"
+                        ? "table-3d"
+                        : "guided",
+                  why:
+                    type === "textile" || type === "furniture"
+                      ? "Puedes aprender sobre un modelo incluido y adaptarlo. No representa automáticamente tu producto real."
+                      : "Puedes empezar con una ficha de opciones y precios, sin necesitar imágenes.",
+                },
+              ].map((answer) => (
+                <button
+                  key={answer.source}
+                  onClick={() => {
+                    setSource(answer.source);
+                    setRecommendation(answer.why);
+                  }}
+                  disabled={busy}
+                >
+                  {answer.label}
+                  <ArrowUpRight size={15} />
+                </button>
+              ))}
+            </div>
+            {recommendation && (
+              <div className="start-recommendation" role="status">
+                <strong>{selected?.label}</strong>
+                <p>{recommendation}</p>
+                <small>
+                  Camino seleccionado. Continúa con el botón inferior.
+                </small>
+              </div>
+            )}
+          </details>
           <div className="source-choices">
             {choices.map((v) => (
               <button
@@ -328,7 +386,10 @@ export default function Start({ create, templates }: any) {
                 className={source === v.id ? "active" : ""}
                 aria-pressed={source === v.id}
                 disabled={busy}
-                onClick={() => setSource(v.id)}
+                onClick={() => {
+                  setSource(v.id);
+                  setRecommendation("");
+                }}
               >
                 <v.icon size={21} />
                 <span>

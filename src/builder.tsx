@@ -17,6 +17,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { effectOf, evaluate, hierarchy } from "../core/layers.mjs";
+import ChoiceGuide from "./choice-guide";
 const uid = () => "n_" + crypto.randomUUID().replaceAll("-", "").slice(0, 14);
 const title = (file: string) =>
   file.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ");
@@ -45,7 +46,9 @@ export function BuilderPanel({
   photo,
   focus,
   onboarding: startGuided = false,
+  onPreview,
 }: any) {
+  const [composing, setComposing] = useState(false);
   const [onboarding, setOnboarding] = useState(startGuided);
   const [section, setSection] = useState(
       !onboarding &&
@@ -916,38 +919,60 @@ export function BuilderPanel({
             </p>
           )}
         </>
+      ) : composing ? (
+        <ChoiceGuide
+          m={m}
+          onCancel={() => setComposing(false)}
+          onCreate={(group: any) => {
+            change((v: any) => v.groups.push(group));
+            setSelected(group.id);
+            setComposing(false);
+          }}
+        />
       ) : (
         <>
           <div className="builder-heading">
             <div>
               <span className="eyebrow">02 · DISEÑA LAS ELECCIONES</span>
-              <h2>Un camino, muchas posibilidades.</h2>
+              <h2>¿Qué podrá elegir tu cliente?</h2>
             </div>
             <button
               className="icon"
               aria-label="Añadir elección"
-              onClick={() => addGroup()}
+              onClick={() => setComposing(true)}
             >
               <Plus />
             </button>
           </div>
           <p>
-            Añade una elección y define qué cambia. Dentro de cada opción puedes
-            crear otra elección.
+            Colores, tallas, acabados o servicios. Empieza con una elección y
+            pruébala sobre tu producto.
           </p>
           <div className="option-tree">
             {tree()}
             {!m.groups.length && (
-              <button className="tree-empty" onClick={() => addGroup()}>
+              <button className="tree-empty" onClick={() => setComposing(true)}>
                 <Plus />
                 <strong>Tu primera elección</strong>
                 <small>Material, tamaño, acabado, extras…</small>
               </button>
             )}
           </div>
-          <button className="text" onClick={() => addGroup()}>
+          <button className="text" onClick={() => setComposing(true)}>
             <Plus size={15} /> Añadir elección principal
           </button>
+          {!!m.groups.length && onPreview && (
+            <div className="builder-next-step">
+              <strong>Prueba lo que acabas de crear</strong>
+              <p>
+                Recorre las opciones y comprueba el precio como lo hará tu
+                cliente.
+              </p>
+              <button className="button full" onClick={onPreview}>
+                <Eye size={16} /> Probar como cliente
+              </button>
+            </div>
+          )}
           {g && (
             <div className="choice-inspector">
               <div className="row">
@@ -985,50 +1010,66 @@ export function BuilderPanel({
                   placeholder="Por ejemplo: Material"
                 />
               </label>
-              <label>
-                ¿Qué cambia al elegir?
-                <select
-                  value={effectOf(m, g)}
-                  onChange={(e) => {
-                    const effect = e.target.value;
-                    edit((v) => {
-                      v.effect = effect;
-                      v.options = v.options.map((o: any) => ({
-                        ...o,
-                        ...(effect === "material"
-                          ? { color: o.color || "#b6b9bc" }
-                          : effect === "visibility"
-                            ? { visible: o.visible ?? true }
-                            : {}),
-                      }));
-                      if (effect === "material")
-                        v.material =
-                          m.kind === "scene-3d"
-                            ? m.objects[0]?.id
-                            : m.modelInfo?.materials?.[0];
-                      if (effect === "visibility")
-                        v.node =
-                          m.kind === "scene-3d"
-                            ? m.objects[0]?.id
-                            : m.modelInfo?.nodes?.[0]?.name;
-                    });
-                  }}
-                >
-                  {Object.entries(labels)
-                    .filter(([type]) =>
-                      m.kind === "form"
-                        ? type === "choice"
-                        : three
-                          ? ["choice", "material", "visibility"].includes(type)
-                          : ["choice", "image", "layer"].includes(type),
-                    )
-                    .map(([type, label]) => (
-                      <option key={type} value={type}>
-                        {label}
-                      </option>
-                    ))}
-                </select>
-              </label>
+              <p className="choice-effect-note">
+                {effectOf(m, g) === "choice"
+                  ? "Esta elección se guarda en el pedido y puede cambiar el precio. No cambia la imagen ni las medidas del producto."
+                  : effectOf(m, g) === "material"
+                    ? "Cada respuesta aplica su color a la pieza seleccionada."
+                    : effectOf(m, g) === "visibility"
+                      ? "Cada respuesta muestra u oculta la pieza seleccionada."
+                      : "Añade una imagen a cada respuesta para que el cliente vea el cambio."}
+              </p>
+              <details className="builder-details">
+                <summary>
+                  Cómo funciona esta elección · ajustes avanzados
+                </summary>
+                <label>
+                  ¿Qué cambia al elegir?
+                  <select
+                    value={effectOf(m, g)}
+                    onChange={(e) => {
+                      const effect = e.target.value;
+                      edit((v) => {
+                        v.effect = effect;
+                        v.options = v.options.map((o: any) => ({
+                          ...o,
+                          ...(effect === "material"
+                            ? { color: o.color || "#b6b9bc" }
+                            : effect === "visibility"
+                              ? { visible: o.visible ?? true }
+                              : {}),
+                        }));
+                        if (effect === "material")
+                          v.material =
+                            m.kind === "scene-3d"
+                              ? m.objects[0]?.id
+                              : m.modelInfo?.materials?.[0];
+                        if (effect === "visibility")
+                          v.node =
+                            m.kind === "scene-3d"
+                              ? m.objects[0]?.id
+                              : m.modelInfo?.nodes?.[0]?.name;
+                      });
+                    }}
+                  >
+                    {Object.entries(labels)
+                      .filter(([type]) =>
+                        m.kind === "form"
+                          ? type === "choice"
+                          : three
+                            ? ["choice", "material", "visibility"].includes(
+                                type,
+                              )
+                            : ["choice", "image", "layer"].includes(type),
+                      )
+                      .map(([type, label]) => (
+                        <option key={type} value={type}>
+                          {label}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+              </details>
               {["material", "visibility"].includes(effectOf(m, g)) && (
                 <label>
                   {effectOf(m, g) === "material"

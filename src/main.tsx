@@ -1305,6 +1305,7 @@ function Editor({ id, run, notify }: any) {
           <div className="inspector-content" ref={inspector}>
             {tab === "options" ? (
               <BuilderPanel
+                onPreview={() => setCustomerPreview(true)}
                 onboarding={
                   new URLSearchParams(location.search).get("onboarding") === "1"
                 }
@@ -1481,13 +1482,21 @@ function Editor({ id, run, notify }: any) {
           title="Vista previa de cliente"
           onClose={() => setCustomerPreview(false)}
         >
-          <CustomerPreview m={m} mode={p.mode} Preview={Preview} />
+          <CustomerPreview
+            m={m}
+            mode={p.mode}
+            Preview={Preview}
+            onContinue={() => {
+              setCustomerPreview(false);
+              setTab("publish");
+            }}
+          />
         </Modal>
       )}
     </div>
   );
 }
-function CustomerPreview({ m, mode, Preview }: any) {
+function CustomerPreview({ m, mode, Preview, onContinue }: any) {
   const [selection, setSelection] = useState<any>({}),
     [mobile, setMobile] = useState(false);
   const r = result(m, selection);
@@ -1496,6 +1505,9 @@ function CustomerPreview({ m, mode, Preview }: any) {
       <div className="preview-toolbar">
         <span>Prueba las opciones sin publicar ni enviar pedidos.</span>
         <div>
+          <button className="button" onClick={onContinue}>
+            Continuar a publicación <ArrowUpRight size={15} />
+          </button>
           <button
             className={!mobile ? "selected" : "button"}
             aria-pressed={!mobile}
