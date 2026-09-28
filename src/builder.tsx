@@ -520,7 +520,9 @@ export function BuilderPanel({
                     : "Cada capa, una posibilidad."}
           </h2>
           <p>
-            {m.kind === "images-2d"
+            {m.kind === "form"
+              ? "Define lo que vendes y después añade las opciones que podrá elegir tu cliente. Puedes empezar sin archivos."
+              : m.kind === "images-2d"
               ? "Sube fotos de las variantes. El cliente verá la imagen de la opción que elija."
               : m.kind === "layers-2d"
                 ? "Sube imágenes transparentes para construir tu producto por partes. Agrupa los acabados de cada pieza."

@@ -87,15 +87,15 @@ function reply(res, data, status = 200) {
 async function raw(req, max = 28 * 1024 * 1024) {
   const chunks = [];
   let n = 0;
-  for await (const chunk of req.iterator({ destroyOnReturn: false })) {
+  for await (const chunk of req) {
     n += chunk.length;
     if (n > max) {
-      // Keep the response writable so clients receive a useful 413, not ECONNRESET.
-      req.resume();
-      fail("Archivo demasiado grande.", 413);
-    }
-    chunks.push(chunk);
+      // Discard excess data while draining the request. An early iterator exit
+      // can reset a keep-alive connection while the client is still uploading.
+      chunks.length = 0;
+    } else chunks.push(chunk);
   }
+  if (n > max) fail("Archivo demasiado grande.", 413);
   return Buffer.concat(chunks);
 }
 async function body(req) {
