@@ -23,6 +23,18 @@ test("Launch preflight rejects insecure origins and incomplete payment configura
     1,
   );
   assert.equal(run({ APP_ORIGIN: "https://example.com" }).status, 0);
+  assert.equal(
+    run({ APP_ORIGIN: "https://example.com", VERCEL: "1" }).status,
+    1,
+  );
+  assert.equal(
+    run({
+      APP_ORIGIN: "https://example.com",
+      VERCEL: "1",
+      DATABASE_URL: "postgres://studio:private@localhost/studio",
+    }).status,
+    0,
+  );
   const full = run({
     APP_ORIGIN: "https://example.com",
     STRIPE_SECRET_KEY: "test",

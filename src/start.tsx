@@ -36,9 +36,15 @@ export default function Start({ create, templates }: any) {
         ) ||
         ![0, 1, 2].includes(d.step) ||
         typeof d.base !== "string" ||
-        !["guided", "images", "empty", "model", "scene", "shirt-3d"].includes(
-          d.source,
-        )
+        ![
+          "guided",
+          "images",
+          "empty",
+          "model",
+          "scene",
+          "shirt-3d",
+          "table-3d",
+        ].includes(d.source)
       )
         return null;
       return d;
@@ -49,17 +55,34 @@ export default function Start({ create, templates }: any) {
   const [storageFailed, setStorageFailed] = useState(false);
   const recipe = (kind: string) => {
     setName(
-      kind === "textile" ? "Mi camiseta personalizada" : "Mi servicio a medida",
+      kind === "textile"
+        ? "Mi camiseta personalizada"
+        : kind === "furniture"
+          ? "Mi mesa a medida"
+          : "Mi servicio a medida",
     );
     setType(kind);
     setQuestions(
-      structuredClone(industries.find((i) => i.id === kind)!.questions).filter(
-        (q) => kind !== "textile" || q.label !== "Color",
-      ),
+      kind === "furniture"
+        ? [
+            {
+              label: "Entrega",
+              answers: "Recogida en tienda, Envío a domicilio",
+            },
+          ]
+        : structuredClone(
+            industries.find((i) => i.id === kind)!.questions,
+          ).filter((q) => kind !== "textile" || q.label !== "Color"),
     );
-    setSource(kind === "textile" ? "shirt-3d" : "guided");
+    setSource(
+      kind === "textile"
+        ? "shirt-3d"
+        : kind === "furniture"
+          ? "table-3d"
+          : "guided",
+    );
     setEdited(true);
-    setBase(kind === "textile" ? "29" : "90");
+    setBase(kind === "textile" ? "29" : kind === "furniture" ? "240" : "90");
     setStep(1);
   };
   const [search, setSearch] = useState(""),
@@ -159,6 +182,14 @@ export default function Start({ create, templates }: any) {
               <span>
                 <strong>Una camiseta con mi diseño</strong>
                 <small>Modelo 3D, tallas y originales de impresión.</small>
+              </span>
+              <ArrowUpRight size={16} />
+            </button>
+            <button onClick={() => recipe("furniture")}>
+              <Armchair size={21} />
+              <span>
+                <strong>Un mueble con mis acabados</strong>
+                <small>Mesa 3D incluida, colores y opciones de entrega.</small>
               </span>
               <ArrowUpRight size={16} />
             </button>
@@ -390,6 +421,16 @@ export default function Start({ create, templates }: any) {
           </p>
           <div className="source-choices">
             {[
+              ...(type === "furniture"
+                ? [
+                    {
+                      id: "table-3d",
+                      icon: Armchair,
+                      label: "Mesa 3D lista para adaptar",
+                      text: "Tablero, patas y acabados incluidos. Cambia sus medidas y sus opciones en el editor.",
+                    },
+                  ]
+                : []),
               ...(type === "textile"
                 ? [
                     {

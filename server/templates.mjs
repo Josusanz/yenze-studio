@@ -33,6 +33,15 @@ const option = (id, label, color, priceDelta = 0) => ({
 });
 export const templates = [
   {
+    id: "table-3d",
+    name: "Mesa Forma",
+    niche: "Muebles 3D",
+    description:
+      "Una mesa preparada con acabados y precio. Ajusta sus piezas y hazla tuya.",
+    basePrice: 24000,
+    groups: [],
+  },
+  {
     id: "shirt-3d",
     name: "Camiseta Studio",
     niche: "Textil 3D",
@@ -171,7 +180,7 @@ export async function makeTemplate(id, storeAsset) {
     kind:
       id === "model" || id === "shirt-3d"
         ? "model-3d"
-        : id === "scene"
+        : id === "scene" || id === "table-3d"
           ? "scene-3d"
           : id === "images"
             ? "images-2d"
@@ -188,6 +197,47 @@ export async function makeTemplate(id, storeAsset) {
     rules: [],
     model: null,
   };
+  if (id === "table-3d") {
+    manifest.objects = [
+      {
+        id: "top",
+        name: "Tablero",
+        type: "box",
+        color: "#c8ad83",
+        size: [1.5, 0.09, 0.8],
+        position: [0, 0.77, 0],
+        rotation: 0,
+      },
+      ...[-0.62, 0.62].flatMap((x, i) =>
+        [-0.27, 0.27].map((z, j) => ({
+          id: `leg_${i}_${j}`,
+          name: `Pata ${i * 2 + j + 1}`,
+          type: "cylinder",
+          color: "#394b55",
+          size: [0.07, 0.73, 0.07],
+          position: [x, 0.365, z],
+          rotation: 0,
+        })),
+      ),
+    ];
+    manifest.groups = [
+      {
+        id: "finish",
+        label: "Acabado del tablero",
+        effect: "material",
+        material: "top",
+        order: 0,
+        required: true,
+        default: "oak",
+        options: [
+          option("oak", "Roble", "#c8ad83"),
+          option("blue", "Azul noche", "#36556b", 2000),
+          option("clay", "Arcilla", "#b27862", 2000),
+        ],
+      },
+    ];
+    return manifest;
+  }
   if (id === "shirt-3d") {
     manifest.model = await storeAsset(
       readFileSync(

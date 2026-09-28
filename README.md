@@ -24,7 +24,7 @@ The first two focused onboarding recipes are apparel and services. Twelve sector
 
 ## Quick start
 
-Requires Node.js 24+ and npm. No external service is required to create and publish a local quote-based configurator.
+Requires Node.js 24.x and npm. No external service is required to create and publish a local quote-based configurator.
 
 ```sh
 git clone https://github.com/Josusanz/yenze-studio.git
@@ -42,7 +42,7 @@ Data and uploaded assets are stored in `data/studio.sqlite`. Keep this directory
 
 | Area | Implemented |
 | --- | --- |
-| Builder | Guided creation, draft recovery in the wizard, nested choices, prices, dependency/exclusion rules, preview, undo/redo |
+| Builder | Apparel, furniture and service starters, autosave, recoverable per-tab drafts, conflict protection, nested choices, prices, rules, customer preview, undo/redo |
 | Rendering | Image variants, layered 2D, self-contained GLB, primitive 3D scenes |
 | Apparel | Direct text/image manipulation, original preservation, physical print area, 150/300 DPI PNG exports for merchants |
 | Operations | Workspaces, customers, saved configurations, quotes, order snapshots, proof approvals, messages |

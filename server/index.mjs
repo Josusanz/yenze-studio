@@ -1,3 +1,4 @@
+import { publicationCheck } from "./publication.mjs";
 import { emailVerification } from "./email-verification.mjs";
 import { commerce } from "./commerce.mjs";
 import { printAssets } from "./print-assets.mjs";
@@ -384,6 +385,7 @@ async function handle(req, res) {
     }
     const user = await userFor(req);
     if (route === "/api/health") {
+      await one("SELECT 1 AS ready");
       reply(res, { ok: true });
       return;
     }
@@ -1256,12 +1258,15 @@ async function handle(req, res) {
           draft.name = b.setup.name.trim();
           draft.basePrice = b.setup.basePrice;
           // Textile templates retain their actual material controls; questions are editable afterwards.
-          if (b.template !== "shirt-3d") draft.groups = prepared;
-          else
+          if (!["shirt-3d", "table-3d"].includes(b.template))
+            draft.groups = prepared;
+          else {
+            const visual = draft.groups.filter((g) => g.effect !== "choice");
             draft.groups = [
-              draft.groups[0],
-              ...prepared.map((q, i) => ({ ...q, order: i + 1 })),
+              ...visual,
+              ...prepared.map((q, i) => ({ ...q, order: i + visual.length })),
             ];
+          }
           draft.industry = b.setup.industry;
         }
         validManifest(draft, await assetCheck(org.id));
@@ -1310,7 +1315,7 @@ async function handle(req, res) {
       return;
     }
     const pm = route.match(
-      /^\/api\/products\/([a-f0-9]{32})(?:\/(publish|unpublish|duplicate|versions))?$/,
+      /^\/api\/products\/([a-f0-9]{32})(?:\/(publish|unpublish|duplicate|versions|check-publish))?$/,
     );
     if (pm) {
       let p = await getProduct(pm[1], org.id);
@@ -1329,6 +1334,21 @@ async function handle(req, res) {
       }
       if (method === "GET" && !pm[2]) {
         reply(res, await product(p));
+        return;
+      }
+      if (method === "POST" && pm[2] === "check-publish") {
+        const b = await body(req);
+        if (b.revision !== p.revision)
+          fail("Hay cambios más recientes. Recarga antes de publicar.", 409);
+        const report = await publicationCheck({
+          manifest: b.manifest,
+          mode: b.mode,
+          assetCheck: await assetCheck(org.id),
+          checkPrint: (design) => prints.check(p.id, design),
+          paymentStatus: () => pay.status(org),
+          domains: JSON.parse(org.domains),
+        });
+        reply(res, { ...report, revision: p.revision });
         return;
       }
       if (method === "GET" && pm[2] === "versions") {

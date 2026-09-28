@@ -84,6 +84,22 @@ test("Tenant isolation, publishing, immutable configurations and quote lifecycle
   });
   let p = await admin("/products", "POST", { template: "cabinet" }, 201);
   await other("/products/" + p.id, "GET", undefined, 404);
+  const check = await admin("/products/" + p.id + "/check-publish", "POST", {
+    revision: p.revision,
+    manifest: p.draft,
+    mode: "quote",
+  });
+  assert.equal(check.ready, true);
+  await other(
+    "/products/" + p.id + "/check-publish",
+    "POST",
+    { revision: p.revision, manifest: p.draft, mode: "quote" },
+    404,
+  );
+  const afterCheck = await admin("/products/" + p.id);
+  assert.equal(afterCheck.revision, p.revision);
+  assert.equal(afterCheck.active, false);
+
   const draftAsset = p.draft.groups[0].options[0].assets.frontal;
   await anon("/assets/" + draftAsset, "GET", undefined, 404);
   await anon("/public/" + p.id, "GET", undefined, 404);

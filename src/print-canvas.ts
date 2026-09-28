@@ -1,3 +1,21 @@
+// Reuse decoded artwork while moving or editing other layers. Keep memory bounded.
+const decodedImages = new Map<string, Promise<HTMLImageElement>>();
+function printImage(src: string) {
+  let image = decodedImages.get(src);
+  if (!image) {
+    image = (async () => {
+      const img = new Image();
+      img.src = src;
+      await img.decode();
+      return img;
+    })();
+    decodedImages.set(src, image);
+    image.catch(() => decodedImages.delete(src));
+    if (decodedImages.size > 8)
+      decodedImages.delete(decodedImages.keys().next().value!);
+  }
+  return image;
+}
 export const fonts: Record<string, string> = {
   sans: "Arial, sans-serif",
   serif: "Georgia, serif",
@@ -34,9 +52,7 @@ export async function printCanvas(
         ctx.fillText(s, 0, (i - (lines.length - 1) / 2) * size * 1.12),
       );
     } else {
-      const img = new Image();
-      img.src = layer.src;
-      await img.decode();
+      const img = await printImage(layer.src);
       const h = (w * img.height) / img.width;
       ctx.drawImage(img, -w / 2, -h / 2, w, h);
     }

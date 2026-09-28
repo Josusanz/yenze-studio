@@ -1,3 +1,10 @@
+import ErrorBoundary from "./error-boundary";
+import PublicationPanel from "./publication";
+import {
+  recoveryKey,
+  readRecovery,
+  writeRecovery,
+} from "../core/editor-recovery.mjs";
 import { checkUpload, uploadLimitMB } from "./upload-limits";
 import { downloadProduction } from "./production-download";
 import { parentOrigin, useEmbed } from "./embed";
@@ -45,8 +52,20 @@ async function api(path: string, method = "GET", data?: any) {
     },
     body: data === undefined ? undefined : JSON.stringify(data),
   });
-  const v = await r.json();
-  if (!r.ok) throw Error(v.error || "No se pudo completar la operación");
+  let v;
+  try {
+    v = await r.json();
+  } catch {
+    throw Error(
+      r.status === 413
+        ? "El archivo o diseño es demasiado grande para esta instalación."
+        : "Studio no ha respondido correctamente. Tus cambios no se han confirmado; inténtalo de nuevo.",
+    );
+  }
+  if (!r.ok)
+    throw Object.assign(Error(v.error || "No se pudo completar la operación"), {
+      status: r.status,
+    });
   return v;
 }
 const go = (params: Record<string, string>) => {
@@ -150,10 +169,30 @@ function Preview({
   );
 }
 function Model({ m, s, onPick }: any) {
-  const [Component, setComponent] = useState<any>(null);
+  const [Component, setComponent] = useState<any>(null),
+    [loadError, setLoadError] = useState(false);
   useEffect(() => {
-    import("./model").then((v) => setComponent(() => v.default));
+    let active = true;
+    import("./model")
+      .then((v) => {
+        if (active) setComponent(() => v.default);
+      })
+      .catch(() => {
+        if (active) setLoadError(true);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
+  if (loadError)
+    return (
+      <div className="preview empty" role="alert">
+        <p>No se ha podido cargar el visor 3D.</p>
+        <button className="button" onClick={() => location.reload()}>
+          Volver a cargar
+        </button>
+      </div>
+    );
   return Component ? (
     <Component m={m} s={s} onPick={onPick} />
   ) : (
@@ -161,6 +200,18 @@ function Model({ m, s, onPick }: any) {
   );
 }
 function Modal({ title, children, onClose, className = "" }: any) {
+  const dialog = useRef<HTMLElement>(null);
+  const previousFocus = useRef(document.activeElement as HTMLElement);
+  useEffect(() => {
+    const oldOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    if (!dialog.current?.contains(document.activeElement))
+      dialog.current?.focus();
+    return () => {
+      document.body.style.overflow = oldOverflow;
+      previousFocus.current?.focus({ preventScroll: true });
+    };
+  }, []);
   return (
     <div
       className="overlay"
@@ -170,6 +221,41 @@ function Modal({ title, children, onClose, className = "" }: any) {
     >
       <section
         className={"modal " + className}
+        ref={dialog}
+        tabIndex={-1}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            e.stopPropagation();
+            onClose();
+          }
+          if (e.key !== "Tab") return;
+          const elements = [
+            ...e.currentTarget.querySelectorAll<HTMLElement>(
+              'button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled),summary,[tabindex="0"]',
+            ),
+          ].filter((el) => el.getClientRects().length);
+          const first = elements[0],
+            last = elements.at(-1);
+          if (!first) {
+            e.preventDefault();
+            return;
+          }
+          if (
+            e.shiftKey &&
+            (document.activeElement === first ||
+              document.activeElement === e.currentTarget)
+          ) {
+            e.preventDefault();
+            last?.focus();
+          } else if (
+            !e.shiftKey &&
+            (document.activeElement === last ||
+              document.activeElement === e.currentTarget)
+          ) {
+            e.preventDefault();
+            first.focus();
+          }
+        }}
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -182,6 +268,8 @@ function Modal({ title, children, onClose, className = "" }: any) {
         </header>
         {className === "wizard-modal" ? (
           <div className="wizard-scroll">{children}</div>
+        ) : className === "customer-preview" ? (
+          <div className="customer-preview-scroll">{children}</div>
         ) : (
           children
         )}
@@ -772,7 +860,9 @@ function Studio({ run, notify, page }: any) {
 function Editor({ id, run, notify }: any) {
   const inspector = useRef<HTMLDivElement>(null);
   const manifestRef = useRef<any>(null),
-    saving = useRef(false);
+    saving = useRef<Promise<any> | null>(null),
+    productRef = useRef<any>(null),
+    saveRef = useRef<(() => Promise<any>) | null>(null);
   const history = useRef<any[]>([]),
     future = useRef<any[]>([]);
   const [focus, setFocus] = useState("");
@@ -782,7 +872,13 @@ function Editor({ id, run, notify }: any) {
     [tab, setTab] = useState("options"),
     [view, setView] = useState("frontal"),
     [dirty, setDirty] = useState(false),
-    [uploading, setUploading] = useState("");
+    [uploading, setUploading] = useState(""),
+    [saveState, setSaveState] = useState(""),
+    [saveError, setSaveError] = useState(""),
+    [recovery, setRecovery] = useState<any>(null),
+    [recoveryWarning, setRecoveryWarning] = useState(false),
+    [customerPreview, setCustomerPreview] = useState(false);
+  productRef.current = p;
   const updateManifest = (value: any) => {
     manifestRef.current = value;
     setM(value);
@@ -792,6 +888,7 @@ function Editor({ id, run, notify }: any) {
       const v = await api("/products/" + id);
       setP(v);
       updateManifest(v.draft);
+      setRecovery(readRecovery(sessionStorage, v));
     });
   }, [id]);
   useEffect(() => {
@@ -804,6 +901,21 @@ function Editor({ id, run, notify }: any) {
   useEffect(() => {
     inspector.current?.scrollTo({ top: 0 });
   }, [tab]);
+  useEffect(() => {
+    if (!dirty || !m || !p || recovery) return;
+    try {
+      writeRecovery(sessionStorage, p, m);
+      setRecoveryWarning(false);
+    } catch {
+      setRecoveryWarning(true);
+    }
+    setSaveError("");
+    const timer = setTimeout(() => {
+      if (saving.current) return;
+      void saveRef.current?.().catch((e) => setSaveError(e.message));
+    }, 1800);
+    return () => clearTimeout(timer);
+  }, [m, dirty, p?.mode, p?.revision, recovery]);
   if (!m) return <div className="loading">Abriendo tu producto…</div>;
   const change = (fn: (v: any) => void) => {
     const current = manifestRef.current;
@@ -815,25 +927,63 @@ function Editor({ id, run, notify }: any) {
     updateManifest(v);
     setDirty(true);
   };
-  const save = async () => {
-    if (saving.current) throw Error("Espera a que termine el guardado actual.");
-    saving.current = true;
+  const save = async (): Promise<any> => {
+    if (saving.current) return saving.current;
     const snapshot = manifestRef.current;
-    try {
-      const v = await api("/products/" + id, "PATCH", {
-        revision: p.revision,
-        manifest: snapshot,
-        mode: p.mode,
-      });
-      setP(v);
-      if (manifestRef.current === snapshot) {
-        updateManifest(v.draft);
-        setDirty(false);
+    const current = productRef.current;
+    setSaveState("Guardando…");
+    setSaveError("");
+    const pending = (async () => {
+      try {
+        const v = await api("/products/" + id, "PATCH", {
+          revision: current.revision,
+          manifest: snapshot,
+          mode: current.mode,
+        });
+        const unchanged =
+          manifestRef.current === snapshot &&
+          productRef.current.mode === current.mode;
+        const next = { ...v, mode: productRef.current.mode };
+        productRef.current = next;
+        setP(next);
+        if (unchanged) {
+          updateManifest(v.draft);
+          setDirty(false);
+          try {
+            sessionStorage.removeItem(recoveryKey(v));
+          } catch {}
+        }
+        setSaveState("");
+        return v;
+      } catch (e) {
+        setSaveState("");
+        setSaveError((e as Error).message);
+        throw e;
+      } finally {
+        saving.current = null;
       }
-      return v;
-    } finally {
-      saving.current = false;
-    }
+    })();
+    saving.current = pending;
+    return pending;
+  };
+  saveRef.current = save;
+  const publish = async () => {
+    let v = dirty || saving.current ? await save() : productRef.current;
+    // A slow save must never publish an older snapshot while the author is typing.
+    if (
+      JSON.stringify(v.draft) !== JSON.stringify(manifestRef.current) ||
+      v.mode !== productRef.current.mode
+    )
+      throw Error(
+        "Has cambiado el producto durante el guardado. Revisa los cambios y vuelve a publicar.",
+      );
+    v = await api("/products/" + id + "/publish", "POST", {
+      revision: v.revision,
+    });
+    productRef.current = v;
+    setP(v);
+    setTab("publish");
+    notify("Configurador publicado. Ya puedes compartirlo.");
   };
   const upload = async (file: File) => {
     checkUpload(file);
@@ -947,9 +1097,10 @@ function Editor({ id, run, notify }: any) {
             onChange={(e) => change((v) => (v.name = e.target.value))}
           />
           <small>
-            {dirty
-              ? "Cambios sin guardar"
-              : `Borrador guardado · versión ${p.revision}`}
+            {saveState ||
+              (dirty
+                ? "Cambios sin guardar"
+                : `Borrador guardado · versión ${p.revision}`)}
           </small>
         </div>
         <div className="head-actions">
@@ -979,6 +1130,12 @@ function Editor({ id, run, notify }: any) {
           >
             <Redo2 size={17} />
           </button>
+          <button
+            className="button preview-trigger"
+            onClick={() => setCustomerPreview(true)}
+          >
+            Vista de cliente
+          </button>
           {p.active && (
             <a
               className="button"
@@ -1003,13 +1160,7 @@ function Editor({ id, run, notify }: any) {
             className="primary"
             onClick={() =>
               run(async () => {
-                const v = dirty ? await save() : p;
-                setP(
-                  await api("/products/" + id + "/publish", "POST", {
-                    revision: v.revision,
-                  }),
-                );
-                notify("Configurador publicado. Ya puedes compartirlo.");
+                await publish();
               })
             }
           >
@@ -1017,6 +1168,67 @@ function Editor({ id, run, notify }: any) {
           </button>
         </div>
       </header>
+      {recovery && (
+        <div className="editor-recovery" role="status">
+          <span>
+            <strong>Hay cambios de esta pestaña sin guardar.</strong>{" "}
+            {recovery.revision === p.revision
+              ? "Puedes recuperar tu trabajo antes de seguir."
+              : "El producto ha cambiado en otra sesión. Conserva tu copia antes de editar."}
+          </span>
+          {recovery.revision === p.revision && (
+            <button
+              className="button"
+              onClick={() => {
+                updateManifest(recovery.manifest);
+                setP({ ...p, mode: recovery.mode });
+                setDirty(true);
+                setRecovery(null);
+              }}
+            >
+              Recuperar cambios
+            </button>
+          )}
+          <button
+            className="button"
+            onClick={() => {
+              const url = URL.createObjectURL(
+                new Blob([JSON.stringify(recovery.manifest, null, 2)], {
+                  type: "application/json",
+                }),
+              );
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "yenze-borrador.json";
+              a.click();
+              setTimeout(() => URL.revokeObjectURL(url), 1000);
+            }}
+          >
+            Descargar copia
+          </button>
+          <button
+            className="text"
+            onClick={() => {
+              sessionStorage.removeItem(recoveryKey(p));
+              setRecovery(null);
+            }}
+          >
+            Descartar copia
+          </button>
+        </div>
+      )}
+      {(saveError || recoveryWarning) && (
+        <div className="editor-save-warning" role="alert">
+          <span>
+            {saveError
+              ? "No se han guardado los cambios: " + saveError
+              : "No se puede crear una copia en este navegador. Guarda antes de salir."}
+          </span>
+          <button className="button" onClick={() => run(() => save())}>
+            Reintentar guardado
+          </button>
+        </div>
+      )}
       <div className="editor-body">
         <section className="canvas">
           <div className="canvas-label">
@@ -1232,82 +1444,104 @@ function Editor({ id, run, notify }: any) {
                 </button>
               </>
             ) : (
-              <>
-                <span className="eyebrow">LISTO PARA SALIR AL MUNDO</span>
-                <h2>Tu producto, donde estén tus clientes.</h2>
-                <label>
-                  Al terminar la configuración
-                  <select
-                    value={p.mode}
-                    onChange={(e) => {
-                      setP({ ...p, mode: e.target.value });
-                      setDirty(true);
-                    }}
-                  >
-                    <option value="quote">Solicitar presupuesto</option>
-                    <option value="purchase">Comprar con Stripe</option>
-                  </select>
-                </label>
-                <p>
-                  La compra directa requiere una cuenta Stripe conectada y
-                  habilitada. El modo presupuesto funciona sin Stripe.
-                </p>
-                <label>
-                  Enlace público
-                  <input
-                    readOnly
-                    value={
-                      location.origin + (p.publicPath || "/?product=" + id)
-                    }
-                  />
-                </label>
-                <label>
-                  Inserta en tu web
-                  <textarea
-                    readOnly
-                    rows={5}
-                    value={`<iframe src="${location.origin}${p.publicPath || "/?product=" + id}${p.publicPath ? "?" : "&"}embed=1" width="100%" height="800" style="border:0" title="Configura tu producto"></iframe>`}
-                  />
-                </label>
-                <p>
-                  Autoriza el dominio de tu web en Conexiones antes de insertar
-                  el configurador en producción.
-                </p>
-                {p.active && (
-                  <button
-                    className="button"
-                    onClick={() =>
-                      run(async () => {
-                        await api("/products/" + id + "/unpublish", "POST", {});
-                        setP({ ...p, active: false });
-                        notify("Publicación retirada");
-                      })
-                    }
-                  >
-                    Retirar publicación
-                  </button>
-                )}
-                <button
-                  className="button"
-                  onClick={() =>
-                    run(async () => {
-                      const copy = await api(
-                        "/products/" + id + "/duplicate",
-                        "POST",
-                        {},
-                      );
-                      go({ edit: copy.id });
-                    })
-                  }
-                >
-                  <Copy size={16} /> Duplicar producto
-                </button>
-              </>
+              <PublicationPanel
+                p={p}
+                m={m}
+                dirty={dirty}
+                api={api}
+                run={run}
+                notify={notify}
+                onMode={(mode: string) => {
+                  setP({ ...p, mode });
+                  setDirty(true);
+                }}
+                onPublish={publish}
+                onDuplicate={async () => {
+                  const copy = await api(
+                    "/products/" + id + "/duplicate",
+                    "POST",
+                    {},
+                  );
+                  go({ edit: copy.id });
+                }}
+                onUnpublish={async () => {
+                  await api("/products/" + id + "/unpublish", "POST", {});
+                  setP({ ...p, active: false });
+                  notify("Publicación retirada");
+                }}
+              />
             )}
           </div>
         </aside>
       </div>
+      {customerPreview && (
+        <Modal
+          className="customer-preview"
+          title="Vista previa de cliente"
+          onClose={() => setCustomerPreview(false)}
+        >
+          <CustomerPreview m={m} mode={p.mode} Preview={Preview} />
+        </Modal>
+      )}
     </div>
+  );
+}
+function CustomerPreview({ m, mode, Preview }: any) {
+  const [selection, setSelection] = useState<any>({}),
+    [mobile, setMobile] = useState(false);
+  const r = result(m, selection);
+  return (
+    <>
+      <div className="preview-toolbar">
+        <span>Prueba las opciones sin publicar ni enviar pedidos.</span>
+        <div>
+          <button
+            className={!mobile ? "selected" : "button"}
+            aria-pressed={!mobile}
+            onClick={() => setMobile(false)}
+          >
+            Escritorio
+          </button>
+          <button
+            className={mobile ? "selected" : "button"}
+            aria-pressed={mobile}
+            onClick={() => setMobile(true)}
+          >
+            Móvil
+          </button>
+        </div>
+      </div>
+      <div className={"customer-preview-frame " + (mobile ? "mobile" : "")}>
+        <div className="preview-product">
+          <Preview m={m} s={selection} view={m.views[0]} />
+        </div>
+        <div className="preview-options">
+          <span className="eyebrow">HECHO A TU MEDIDA</span>
+          <h1>{m.name}</h1>
+          <p>{m.description}</p>
+          <LiveChoices
+            m={m}
+            s={selection}
+            onSelect={(id: string, value: any) =>
+              setSelection(result(m, { ...selection, [id]: value }).selection)
+            }
+          />
+          <div className="buyer-total">
+            <span>{mode === "quote" ? "Precio orientativo" : "Total"}</span>
+            <strong>{r.valid ? money(r.total) : "—"}</strong>
+          </div>
+          {!r.valid && <p className="validation">{r.errors.join(" ")}</p>}
+          <button className="primary full" disabled>
+            {mode === "quote"
+              ? "Solicitar presupuesto"
+              : "Continuar con el pedido"}
+          </button>
+          <small>
+            Vista previa: los pedidos se envían desde el enlace publicado.
+          </small>
+        </div>
+      </div>
+    </>
   );
 }
 function PhotoModel({ productId, run, upload, apply }: any) {
@@ -2593,7 +2827,9 @@ function SettingsPage({ run, notify }: any) {
 }
 declare const __SHOWCASE__: boolean;
 createRoot(document.getElementById("root")!).render(
-  __SHOWCASE__ ? <Landing standalone /> : <App />,
+  <ErrorBoundary>
+    {__SHOWCASE__ ? <Landing standalone /> : <App />}
+  </ErrorBoundary>,
 );
 
 function EmailVerification({ token }: { token: string }) {

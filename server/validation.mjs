@@ -233,6 +233,8 @@ export function validManifest(m, assetCheck, { publish = false } = {}) {
   if (m.kind === "form" && m.groups.some((g) => effectOf(m, g) !== "choice"))
     fail("Una ficha sin imágenes utiliza elecciones sin efecto visual.");
   if (publish) {
+    if (m.kind === "scene-3d" && !m.objects?.length)
+      fail("Añade al menos una pieza 3D antes de publicar.");
     if (m.kind === "form" && !m.groups.length)
       fail("Añade al menos una elección antes de publicar.");
     if (m.kind === "model-3d" && !m.model)

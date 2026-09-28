@@ -44,11 +44,19 @@ add(
   true,
   "Production checkout requires verified email; configure mail before enabling payments.",
 );
+let database = false;
+try {
+  const url = new URL(env.DATABASE_URL);
+  database =
+    ["postgres:", "postgresql:"].includes(url.protocol) && !!url.hostname;
+} catch {}
 add(
-  "Persistent data directory",
-  !!env.YENZE_DATA_DIR,
-  false,
-  "Default is ./data. Back it up off-host; do not use ephemeral serverless storage.",
+  "Persistent database",
+  database || (!env.VERCEL && !!env.YENZE_DATA_DIR),
+  !!env.VERCEL,
+  env.VERCEL
+    ? "Vercel requires a PostgreSQL DATABASE_URL. Run schema migrations before deploying."
+    : "Use PostgreSQL or a persistent SQLite data directory and verify off-host restores.",
 );
 for (const c of checks)
   console.log(

@@ -228,7 +228,7 @@ export default function Model({
     });
     visibility.observe(el);
     renderer.setAnimationLoop(() => {
-      if (!visible) return;
+      if (!visible || document.hidden) return;
       controls.update();
       if (frames > 0) {
         if (m.personalization && regionCallback.current && root.current) {
@@ -278,6 +278,7 @@ export default function Model({
       dispose(scene);
       environmentMap.dispose();
       renderer.dispose();
+      renderer.forceContextLoss();
       renderer.domElement.remove();
       cameraState.current = null;
       decals.current = null;
@@ -385,8 +386,21 @@ export default function Model({
       )
         meshes.push(o);
     });
+    const sides = ["front", "back"].filter((side) =>
+      design.layers.some((layer: any) => layer.side === side),
+    );
+    for (const child of [...container.children]) {
+      if (!sides.includes(child.name)) {
+        container.remove(child);
+        dispose(child);
+      }
+    }
+    if (!sides.length) {
+      invalidate.current();
+      return;
+    }
     Promise.all(
-      ["front", "back"].map(async (side) => ({
+      sides.map(async (side) => ({
         side,
         canvas: await printCanvas(design, side),
       })),

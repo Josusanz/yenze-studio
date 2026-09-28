@@ -73,7 +73,9 @@ test("Textile design supports text, drag, back, image, undo and durable shared d
   await page.getByRole("button", { name: "Espalda", exact: true }).click();
   await page.getByRole("button", { name: "Añadir texto", exact: true }).click();
   await page.getByLabel("Tu texto", { exact: true }).fill("EDICIÓN 01");
-  const uploaded = page.waitForResponse(r => r.url().endsWith("/print-assets") && r.request().method() === "POST");
+  const uploaded = page.waitForResponse(
+    (r) => r.url().endsWith("/print-assets") && r.request().method() === "POST",
+  );
   await page.getByLabel("Imagen para la camiseta").setInputFiles({
     name: "print.png",
     mimeType: "image/png",
@@ -84,7 +86,9 @@ test("Textile design supports text, drag, back, image, undo and durable shared d
       .toBuffer(),
   });
   expect((await uploaded).status()).toBe(201);
-  await expect(page.locator(".textile-layer-list button")).toHaveCount(2, { timeout: 20000 });
+  await expect(page.locator(".textile-layer-list button")).toHaveCount(2, {
+    timeout: 20000,
+  });
   await page.screenshot({ path: "artifacts/textile-editor.png" });
   await page
     .getByRole("button", { name: "Usar este diseño", exact: true })
@@ -139,6 +143,25 @@ test("Textile design supports text, drag, back, image, undo and durable shared d
   expect(metadata.width).toBe(3366);
   expect(metadata.height).toBe(4488);
   expect(metadata.density).toBe(300);
+  expect(errors).toEqual([]);
+});
+
+test("Merchant artwork survives save and reload and rejects executable uploads", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.request.post("/api/auth/signup", {
+    data: {
+      name: "Merchant",
+      company: "Artwork",
+      email: "artwork@browser.test",
+      password: "test-password-123",
+    },
+  });
+  const p = await (
+    await page.request.post("/api/products", { data: { template: "shirt-3d" } })
+  ).json();
   await page.goto("/?edit=" + p.id);
   await page.getByRole("button", { name: /Diseñar la camiseta/ }).click();
   await page.getByRole("button", { name: "Añadir texto", exact: true }).click();

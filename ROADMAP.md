@@ -10,11 +10,13 @@ Shipping dates are targets, not commitments. Prioritize observed seller and buye
 - Embed SDK, server-priced tickets, API and MCP.
 
 ## Before a hosted commercial pilot
-- [ ] Select persistent hosting, domain and operational owner.
+- [x] Deploy persistent PostgreSQL hosting and studio.yenze.io.
+- [ ] Assign the production operational owner.
 - [ ] Validate provider-backed Stripe test payment/refund and email delivery in staging.
 - [ ] Run the five-business pilot and publish anonymized findings with consent.
 - [ ] Validate WooCommerce classic checkout and explicitly test/restrict Blocks.
-- [ ] Implement deployment monitoring, offsite backup scheduling and incident procedure.
+- [x] Add scheduled public availability checks and editor recovery.
+- [ ] Verify offsite backup scheduling, restore and incident procedure.
 - [ ] Complete an independent security review and deployment load test.
 - [ ] Configure operator identity, privacy, retention and support terms for that deployment.
 

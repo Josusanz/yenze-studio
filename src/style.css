@@ -3018,10 +3018,153 @@ input[type="checkbox"] {
     grid-template-columns: 1fr;
   }
 }
-.proof-panel{padding:24px;border:1px solid var(--line,#dce3ea);border-radius:20px;background:#f7f9fb;margin:24px 0;display:grid;gap:12px}.proof-panel p{margin:0;line-height:1.6}.proof-panel small{display:block;color:#617386;line-height:1.6}.proof-panel form{display:grid;gap:12px}.proof-consent{display:flex;align-items:center;gap:12px}.proof-consent input{width:20px;height:20px;flex-shrink:0}.print-settings{padding:18px;border:1px solid #dce3ea;border-radius:16px;margin:16px 0}
-.starter-recipes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0}.starter-recipes button{display:flex;align-items:center;gap:14px;padding:20px;text-align:left;background:#f6f8fa;border:1px solid #dee5ec;border-radius:18px;color:#243b4e}.starter-recipes span{flex:1}.starter-recipes strong,.starter-recipes small{display:block}.starter-recipes small{font-size:12px;color:#6c7e8b;margin-top:7px;line-height:1.6}.wizard-summary{padding:20px;background:#f6f8fa;border-radius:16px;margin:20px 0}.launch-readiness{margin:32px 0}.launch-readiness>div{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.launch-readiness article{padding:22px;border:1px solid #dce3ea;border-radius:18px;background:white}.launch-readiness h3{font-size:16px;margin:16px 0 8px}.launch-readiness p{font-size:13px;line-height:1.7;color:#677c8a}.readiness-state{font-size:11px;border-radius:20px;padding:5px 10px;background:#f1eadf;color:#775a2f}.readiness-state.ready{background:#e6eee9;color:#38634e}@media(max-width:760px){.starter-recipes,.launch-readiness>div{grid-template-columns:1fr}}
-.verification-banner{padding:12px 24px;background:#edf3ef;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px;flex-wrap:wrap}.verification-page{max-width:640px;margin:10vh auto;padding:24px;display:grid;gap:24px}.verification-page h1{font-size:clamp(32px,5vw,48px);line-height:1.1}
-.order-service-mark{width:100%;aspect-ratio:1;display:grid;place-items:center;background:#edf2ee;color:#29473e;font:italic 76px Georgia,serif;border-radius:18px}
+.proof-panel {
+  padding: 24px;
+  border: 1px solid var(--line, #dce3ea);
+  border-radius: 20px;
+  background: #f7f9fb;
+  margin: 24px 0;
+  display: grid;
+  gap: 12px;
+}
+.proof-panel p {
+  margin: 0;
+  line-height: 1.6;
+}
+.proof-panel small {
+  display: block;
+  color: #617386;
+  line-height: 1.6;
+}
+.proof-panel form {
+  display: grid;
+  gap: 12px;
+}
+.proof-consent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.proof-consent input {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.print-settings {
+  padding: 18px;
+  border: 1px solid #dce3ea;
+  border-radius: 16px;
+  margin: 16px 0;
+}
+.starter-recipes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 24px 0;
+}
+.starter-recipes button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+  text-align: left;
+  background: #f6f8fa;
+  border: 1px solid #dee5ec;
+  border-radius: 18px;
+  color: #243b4e;
+}
+.starter-recipes span {
+  flex: 1;
+}
+.starter-recipes strong,
+.starter-recipes small {
+  display: block;
+}
+.starter-recipes small {
+  font-size: 12px;
+  color: #6c7e8b;
+  margin-top: 7px;
+  line-height: 1.6;
+}
+.wizard-summary {
+  padding: 20px;
+  background: #f6f8fa;
+  border-radius: 16px;
+  margin: 20px 0;
+}
+.launch-readiness {
+  margin: 32px 0;
+}
+.launch-readiness > div {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.launch-readiness article {
+  padding: 22px;
+  border: 1px solid #dce3ea;
+  border-radius: 18px;
+  background: white;
+}
+.launch-readiness h3 {
+  font-size: 16px;
+  margin: 16px 0 8px;
+}
+.launch-readiness p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #677c8a;
+}
+.readiness-state {
+  font-size: 11px;
+  border-radius: 20px;
+  padding: 5px 10px;
+  background: #f1eadf;
+  color: #775a2f;
+}
+.readiness-state.ready {
+  background: #e6eee9;
+  color: #38634e;
+}
+@media (max-width: 760px) {
+  .starter-recipes,
+  .launch-readiness > div {
+    grid-template-columns: 1fr;
+  }
+}
+.verification-banner {
+  padding: 12px 24px;
+  background: #edf3ef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+.verification-page {
+  max-width: 640px;
+  margin: 10vh auto;
+  padding: 24px;
+  display: grid;
+  gap: 24px;
+}
+.verification-page h1 {
+  font-size: clamp(32px, 5vw, 48px);
+  line-height: 1.1;
+}
+.order-service-mark {
+  width: 100%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  background: #edf2ee;
+  color: #29473e;
+  font:
+    italic 76px Georgia,
+    serif;
+  border-radius: 18px;
+}
 
 /* Keep the creation assistant inside the viewport with one explicit scroll area. */
 .modal.wizard-modal {
@@ -3040,8 +3183,12 @@ input[type="checkbox"] {
   padding: 24px 30px 20px;
   border-bottom: 1px solid var(--line);
 }
-.wizard-modal > header h2 { font-size: 22px; }
-.wizard-modal > header .icon { flex-shrink: 0; }
+.wizard-modal > header h2 {
+  font-size: 22px;
+}
+.wizard-modal > header .icon {
+  flex-shrink: 0;
+}
 .wizard-scroll {
   flex: 1 1 auto;
   min-height: 0;
@@ -3062,9 +3209,243 @@ input[type="checkbox"] {
   border-top: 1px solid var(--line);
 }
 @media (max-width: 760px) {
-  .modal.wizard-modal { height: calc(100dvh - 24px); max-height: calc(100dvh - 24px); }
-  .wizard-modal > header { padding: 18px 20px; }
-  .wizard-modal > header h2 { font-size: 18px; }
-  .wizard-scroll { padding: 20px; }
-  .wizard-scroll .wizard-foot { bottom: -20px; }
+  .modal.wizard-modal {
+    height: calc(100dvh - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+  .wizard-modal > header {
+    padding: 18px 20px;
+  }
+  .wizard-modal > header h2 {
+    font-size: 18px;
+  }
+  .wizard-scroll {
+    padding: 20px;
+  }
+  .wizard-scroll .wizard-foot {
+    bottom: -20px;
+  }
+}
+/* A saved draft, a checked publication, and a customer preview in the same studio. */
+.editor-recovery,
+.editor-save-warning {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e2d8bf;
+  background: #fff9ed;
+  font-size: 13px;
+}
+.editor-recovery > span,
+.editor-save-warning > span {
+  flex: 1;
+  min-width: 200px;
+}
+.editor-recovery strong {
+  display: block;
+  margin-bottom: 4px;
+}
+.publication-help {
+  font-size: 12px !important;
+}
+.publication-checks {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 8px 16px;
+  margin: 24px 0;
+}
+.publication-checks > div {
+  display: flex;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.publication-checks > div:last-child {
+  border: 0;
+}
+.publication-checks svg {
+  flex-shrink: 0;
+  color: #567965;
+}
+.publication-checks [data-state="blocked"] svg {
+  color: #aa5546;
+}
+.publication-checks [data-state="optional"] svg {
+  color: #8e7d58;
+}
+.publication-checks small {
+  display: block;
+  margin-top: 6px;
+  color: #758392;
+  line-height: 1.6;
+}
+.publication-share {
+  margin: 28px 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.publication-share details {
+  margin-top: 24px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.publication-share summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.publication-share li {
+  margin-bottom: 9px;
+}
+.publication-share a {
+  text-decoration: underline;
+}
+.publication-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.customer-preview {
+  width: 1200px;
+}
+.preview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+.preview-toolbar > div {
+  display: flex;
+  gap: 8px;
+}
+.customer-preview-frame {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  max-width: 100%;
+  margin: auto;
+}
+.preview-product {
+  min-height: 380px;
+  background: #f3f5f5;
+  position: relative;
+}
+.preview-product > .preview,
+.preview-product > .model-preview {
+  height: 100%;
+  min-height: 380px;
+}
+.preview-options {
+  padding: 28px;
+  min-width: 0;
+}
+.preview-options h1 {
+  font-size: 30px;
+}
+.preview-options > small {
+  display: block;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-top: 12px;
+}
+.customer-preview-frame.mobile {
+  width: 390px;
+  grid-template-columns: 1fr;
+}
+.customer-preview-frame.mobile .preview-product {
+  height: 320px;
+  min-height: 320px;
+}
+.customer-preview-frame.mobile .preview-product > * {
+  min-height: 320px;
+}
+.customer-preview-frame.mobile .preview-options {
+  padding: 20px;
+}
+@media (max-width: 760px) {
+  .preview-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .customer-preview-frame {
+    grid-template-columns: 1fr;
+  }
+  .preview-product {
+    height: 300px;
+    min-height: 300px;
+  }
+  .preview-product > .preview,
+  .preview-product > .model-preview {
+    min-height: 300px;
+  }
+  .editor-recovery,
+  .editor-save-warning {
+    padding: 12px;
+  }
+  .preview-options {
+    padding: 20px;
+  }
+  .preview-trigger {
+    font-size: 11px;
+  }
+}
+
+.app-recovery {
+  max-width: 640px;
+  margin: 12vh auto;
+  padding: 32px;
+}
+.app-recovery h1 {
+  margin-top: 44px;
+}
+.app-recovery p {
+  line-height: 1.8;
+  color: var(--muted);
+}
+.app-recovery > div {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.editor .inspector-content > .publication-panel {
+  padding: 28px 24px;
+}
+.modal.customer-preview {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  max-height: calc(100dvh - 50px);
+  overflow: hidden;
+}
+.customer-preview > header {
+  margin: 0;
+  padding: 24px 30px;
+  flex: 0 0 auto;
+  border-bottom: 1px solid var(--line);
+  gap: 16px;
+}
+.customer-preview-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px 30px;
+}
+@media (max-width: 760px) {
+  .modal.customer-preview {
+    max-height: calc(100dvh - 24px);
+  }
+  .customer-preview > header,
+  .customer-preview-scroll {
+    padding: 20px;
+  }
+  .editor .inspector-content > .publication-panel {
+    padding: 24px 20px;
+  }
 }
