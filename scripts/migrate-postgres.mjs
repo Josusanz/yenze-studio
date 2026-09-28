@@ -9,14 +9,19 @@ try {
   await client.connect();
   await client.query("BEGIN");
   await client.query("SELECT pg_advisory_xact_lock(4928021)");
-  await client.query(
-    await readFile(
-      new URL("../migrations/001-studio-postgres.sql", import.meta.url),
-      "utf8",
-    ),
-  );
+  for (const migration of [
+    "001-studio-postgres.sql",
+    "002-large-shared-designs.sql",
+  ]) {
+    await client.query(
+      await readFile(
+        new URL("../migrations/" + migration, import.meta.url),
+        "utf8",
+      ),
+    );
+  }
   await client.query("COMMIT");
-  console.log("Studio schema migration 001 applied.");
+  console.log("Studio schema migrations 001–002 applied.");
 } catch (e) {
   await client.query("ROLLBACK").catch(() => {});
   console.error("Migration failed:", e.code || "connection error");

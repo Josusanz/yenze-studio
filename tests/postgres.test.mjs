@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 import { spawn } from "node:child_process";
 import pg from "pg";
+import sharp from "sharp";
 import { postgresSQL } from "../server/postgres.mjs";
 
 test("PostgreSQL placeholder conversion preserves literals and conflict handling", () => {
@@ -54,6 +55,12 @@ test(
     await adminDB.query(
       readFileSync(
         new URL("../migrations/001-studio-postgres.sql", import.meta.url),
+        "utf8",
+      ),
+    );
+    await adminDB.query(
+      readFileSync(
+        new URL("../migrations/002-large-shared-designs.sql", import.meta.url),
         "utf8",
       ),
     );
@@ -143,6 +150,43 @@ test(
       201,
     );
     assert.ok(shirt.draft.model);
+    const publishedShirt = await owner(
+      "/products/" + shirt.id + "/publish",
+      "POST",
+      { revision: shirt.revision },
+    );
+    const png = await sharp(randomBytes(128 * 128 * 3), {
+      raw: { width: 128, height: 128, channels: 3 },
+    })
+      .png()
+      .toBuffer();
+    const printSelection = {
+      $print: {
+        version: 1,
+        layers: [
+          {
+            id: "image",
+            type: "image",
+            side: "front",
+            src: "data:image/png;base64," + png.toString("base64"),
+            x: 0.5,
+            y: 0.5,
+            width: 0.7,
+            rotation: 0,
+          },
+        ],
+      },
+    };
+    const imageShare = await anon("/public/" + shirt.id + "/share", "POST", {
+      version: publishedShirt.revision,
+      selection: printSelection,
+    });
+    const repeatShare = await anon("/public/" + shirt.id + "/share", "POST", {
+      version: publishedShirt.revision,
+      selection: printSelection,
+    });
+    assert.equal(imageShare.path, repeatShare.path);
+
     const results = await Promise.all(
       [1, 2].map((n) =>
         owner(
