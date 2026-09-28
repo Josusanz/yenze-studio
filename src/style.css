@@ -892,8 +892,16 @@ input[type="checkbox"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 20px;
   padding: 25px 5vw;
   border-bottom: 1px solid var(--line);
+}
+.store-head .brand {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.store-head > button {
+  flex-shrink: 0;
 }
 .brand {
   font-size: 23px;
