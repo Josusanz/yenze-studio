@@ -18,23 +18,23 @@ test("Novice sector discovery preserves edits and creation is atomic", async ({
   await page.getByLabel("Buscar sector").fill("cafe");
   await page.getByRole("button", { name: /Alimentación y bebidas/ }).click();
   await page.getByRole("button", { name: /Continuar/ }).click();
-  await expect(page.getByLabel("Pregunta 1", { exact: true })).toHaveValue(
-    "Formato",
-  );
-  await page.getByLabel("Pregunta 1", { exact: true }).fill("Mi pregunta");
+  await expect(page.getByLabel("Pregunta 1", { exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: /Continuar sin imágenes/ }).click();
   await page.getByRole("button", { name: "Atrás", exact: true }).click();
-  await page.getByLabel("Buscar sector").fill("regalo");
-  await page.getByRole("button", { name: /Regalos y papelería/ }).click();
+  await expect(page.getByLabel("¿Qué vas a vender?")).toHaveValue("Mi café");
   await page.getByRole("button", { name: /Continuar/ }).click();
-  await expect(page.getByLabel("Pregunta 1", { exact: true })).toHaveValue(
-    "Mi pregunta",
-  );
-  await page.getByRole("button", { name: /Continuar/ }).click();
-  await page.getByRole("button", { name: /Crear mi configurador/ }).click();
+  await expect(
+    page.getByRole("button", { name: /Continuar sin imágenes/ }),
+  ).toHaveClass(/active/);
+  await page
+    .getByRole("button", { name: "Crear mi ficha", exact: true })
+    .click();
   await expect(page).toHaveURL(/edit=/);
+  await page.getByRole("button", { name: /Ahora, qué podrá elegir/ }).click();
+  await expect(page.getByLabel("Nombre del grupo")).toHaveValue("Formato");
   const before = await (await page.request.get("/api/products")).json();
   expect(before).toHaveLength(1);
-  expect(before[0].draft.groups[0].label).toBe("Mi pregunta");
+  expect(before[0].draft.groups[0].label).toBe("Formato");
   const bad = await page.request.post("/api/products", {
     data: {
       template: "guided",

@@ -44,10 +44,13 @@ export function BuilderPanel({
   applyModel,
   photo,
   focus,
+  onboarding: startGuided = false,
 }: any) {
+  const [onboarding, setOnboarding] = useState(startGuided);
   const [section, setSection] = useState(
-      m.kind === "form" ||
-        m.groups.some((g: any) => effectOf(m, g) !== "choice")
+      !onboarding &&
+        (m.kind === "form" ||
+          m.groups.some((g: any) => effectOf(m, g) !== "choice"))
         ? "choices"
         : "assets",
     ),
@@ -70,6 +73,17 @@ export function BuilderPanel({
   }, [focus]);
   const g = m.groups.find((g: any) => g.id === selected),
     three = ["model-3d", "scene-3d"].includes(m.kind);
+  const visualReady =
+    m.kind === "form" ||
+    (m.kind === "model-3d"
+      ? !!m.model
+      : m.kind === "scene-3d"
+        ? !!m.objects?.length
+        : m.groups.some((group: any) =>
+            group.options.some((o: any) =>
+              Object.values(o.assets || {}).some(Boolean),
+            ),
+          ));
   const select = (id: string, option: string | null) => {
     let value = { ...s, [id]: option };
     try {
@@ -195,7 +209,7 @@ export function BuilderPanel({
         }
       });
       setSelected(id);
-      setSection("choices");
+      if (!onboarding) setSection("choices");
       setMessage(
         "Imágenes listas. Cada archivo es una opción que puedes renombrar.",
       );
@@ -309,6 +323,50 @@ export function BuilderPanel({
   };
   return (
     <div className="builder-panel">
+      {onboarding && (
+        <div className="onboarding-guide" role="status">
+          <span className="eyebrow">
+            {section === "assets"
+              ? "PRIMERO · TU PRODUCTO"
+              : "DESPUÉS · SUS OPCIONES"}
+          </span>
+          <strong>
+            {section === "assets"
+              ? visualReady
+                ? "Ya puedes verlo. Ahora hazlo tuyo."
+                : "Antes de elegir, vamos a verlo."
+              : "Decide qué puede cambiar tu cliente."}
+          </strong>
+          <p>
+            {section === "assets"
+              ? visualReady
+                ? "Revisa el producto en el lienzo. Cuando esté listo, continúa con sus opciones."
+                : "Sube tus archivos o añade una pieza. Las opciones vendrán después."
+              : "Las piezas y los archivos que has añadido son tu punto de partida. Puedes volver a Producto cuando quieras."}
+          </p>
+          {section === "assets" && visualReady && (
+            <button
+              className="primary full"
+              onClick={() => setSection("choices")}
+            >
+              Configurar opciones <ChevronRight size={16} />
+            </button>
+          )}
+          {section === "choices" && (
+            <button
+              className="text"
+              onClick={() => {
+                setOnboarding(false);
+                const url = new URL(location.href);
+                url.searchParams.delete("onboarding");
+                window.history.replaceState(null, "", url);
+              }}
+            >
+              Cerrar esta guía
+            </button>
+          )}
+        </div>
+      )}
       <div className="builder-switch">
         <button
           className={section === "assets" ? "active" : ""}
@@ -318,6 +376,7 @@ export function BuilderPanel({
         </button>
         <button
           className={section === "choices" ? "active" : ""}
+          disabled={onboarding && !visualReady}
           onClick={() => setSection("choices")}
         >
           <SlidersHorizontal size={15} /> Elecciones{" "}
@@ -326,20 +385,22 @@ export function BuilderPanel({
       </div>
       {section === "assets" ? (
         <>
-          <label>
-            Descripción para tus clientes
-            <textarea
-              maxLength={300}
-              rows={3}
-              value={m.description || ""}
-              placeholder="Explica qué pueden personalizar y qué representa la imagen."
-              onChange={(e) =>
-                change((v: any) => {
-                  v.description = e.target.value;
-                })
-              }
-            />
-          </label>
+          {!onboarding && (
+            <label>
+              Descripción para tus clientes
+              <textarea
+                maxLength={300}
+                rows={3}
+                value={m.description || ""}
+                placeholder="Explica qué pueden personalizar y qué representa la imagen."
+                onChange={(e) =>
+                  change((v: any) => {
+                    v.description = e.target.value;
+                  })
+                }
+              />
+            </label>
+          )}
           {m.personalization && (
             <section className="print-settings">
               <h3>Zona de impresión</h3>
@@ -843,10 +904,17 @@ export function BuilderPanel({
           )}
           <button
             className="primary full"
+            disabled={onboarding && !visualReady}
             onClick={() => setSection("choices")}
           >
             Ahora, qué podrá elegir el cliente <ChevronRight size={17} />
           </button>
+          {onboarding && !visualReady && (
+            <p className="help-note">
+              Añade primero tu producto para continuar. Tu borrador se guarda
+              automáticamente.
+            </p>
+          )}
         </>
       ) : (
         <>

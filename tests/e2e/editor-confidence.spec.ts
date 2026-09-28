@@ -103,7 +103,7 @@ test("Publication explains missing assets and customer preview never sends an or
   expect((await (await page.request.get("/api/orders")).json()).length).toBe(0);
 });
 
-test("Furniture recipe includes working 3D finishes and preserves the delivery question", async ({
+test("Furniture recipe shows the product before configuring working 3D finishes", async ({
   page,
 }) => {
   await page.request.post("/api/auth/signup", {
@@ -118,14 +118,14 @@ test("Furniture recipe includes working 3D finishes and preserves the delivery q
   await page
     .getByRole("button", { name: /Un mueble con mis acabados/ })
     .click();
-  await expect(page.getByLabel("Pregunta 1", { exact: true })).toHaveValue(
-    "Entrega",
-  );
-  await page.getByRole("button", { name: "Continuar", exact: true }).click();
+  await expect(page.getByLabel("Pregunta 1", { exact: true })).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: /Mesa 3D lista para adaptar/ }),
   ).toHaveClass(/active/);
-  await page.getByRole("button", { name: "Crear mi configurador" }).click();
+  await page
+    .getByRole("button", { name: "Abrir mi mesa 3D", exact: true })
+    .click();
+  await expect(page.locator(".onboarding-guide")).toContainText("PRIMERO");
   await expect(page.getByLabel("Nombre del producto")).toHaveValue(
     "Mi mesa a medida",
   );
@@ -139,7 +139,9 @@ test("Furniture recipe includes working 3D finishes and preserves the delivery q
     .getByRole("button", { name: /Azul noche/ })
     .click();
   await expect(page.locator(".canvas-bottom")).toContainText("260");
-  await expect(page.locator(".test-panel")).toContainText("Entrega");
+  await expect(page.locator(".test-panel")).toContainText(
+    "Acabado del tablero",
+  );
   await page.getByRole("button", { name: "Publicar", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Copiar enlace", exact: true }),
@@ -151,7 +153,9 @@ test("A conflicting server edit is never overwritten by autosave or recovery", a
 }) => {
   const p = await setup(page, "conflict@confidence.test");
   // The editor must hold the old revision before another session updates it.
-  await expect(page.getByLabel("Nombre del producto")).toHaveValue(p.draft.name);
+  await expect(page.getByLabel("Nombre del producto")).toHaveValue(
+    p.draft.name,
+  );
   const remoteEdit = await page.request.patch("/api/products/" + p.id, {
     data: {
       revision: p.revision,

@@ -12,17 +12,26 @@ test("A beginner resumes the assistant and creates a service with the guided rec
   });
   await page.goto("/?page=products&new=1");
   await page.getByRole("button", { name: /Un servicio a medida/ }).click();
-  await page.getByLabel("Pregunta 1", { exact: true }).fill("Dónde te ayudo");
+  await expect(page.getByLabel("Pregunta 1", { exact: true })).toHaveCount(0);
   await page.reload();
   await expect(
     page.getByText("Hemos recuperado tu idea.", { exact: false }),
   ).toBeVisible();
-  await expect(page.getByLabel("Pregunta 1", { exact: true })).toHaveValue(
-    "Dónde te ayudo",
-  );
-  await page.getByRole("button", { name: /Continuar/ }).click();
-  await expect(page.locator(".wizard-summary")).toContainText("90,00");
-  await page.getByRole("button", { name: /Crear mi configurador/ }).click();
+  await expect(
+    page.getByRole("button", { name: /Continuar sin imágenes/ }),
+  ).toHaveClass(/active/);
+  await page
+    .getByRole("button", { name: "Crear mi ficha", exact: true })
+    .click();
+  await page.getByRole("button", { name: /Ahora, qué podrá elegir/ }).click();
+  await page.getByLabel("Nombre del grupo").fill("Dónde te ayudo");
+  await expect
+    .poll(
+      async () =>
+        (await (await page.request.get("/api/products")).json())[0].draft
+          .groups[0].label,
+    )
+    .toBe("Dónde te ayudo");
   await expect(page).toHaveURL(/edit=/);
   const products = await (await page.request.get("/api/products")).json();
   expect(products).toHaveLength(1);

@@ -771,22 +771,20 @@ function Studio({ run, notify, page }: any) {
         >
           <Start
             templates={templates}
-            create={(template: string, setup?: any) =>
-              run(async () => {
-                const p = await api("/products", "POST", {
-                  template,
-                  name: setup?.name,
-                  setup,
-                });
-                try {
-                  sessionStorage.removeItem(
-                    "yenze:start:" +
-                      (localStorage.getItem("workspace") || "current"),
-                  );
-                } catch {}
-                go({ edit: p.id });
-              })
-            }
+            create={async (template: string, setup?: any) => {
+              const p = await api("/products", "POST", {
+                template,
+                name: setup?.name,
+                setup: setup?.questions ? setup : undefined,
+              });
+              try {
+                sessionStorage.removeItem(
+                  "yenze:start:" +
+                    (localStorage.getItem("workspace") || "current"),
+                );
+              } catch {}
+              go({ edit: p.id, onboarding: "1" });
+            }}
           />
         </Modal>
       )}
@@ -1307,6 +1305,9 @@ function Editor({ id, run, notify }: any) {
           <div className="inspector-content" ref={inspector}>
             {tab === "options" ? (
               <BuilderPanel
+                onboarding={
+                  new URLSearchParams(location.search).get("onboarding") === "1"
+                }
                 m={m}
                 change={change}
                 s={s}

@@ -26,18 +26,17 @@ test("A first-time seller with no images creates, tests, publishes, deletes and 
     .getByRole("button", { name: "Muebles y espacios", exact: true })
     .click();
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
-  await page.getByLabel("Pregunta 1", { exact: true }).fill("Material");
-  await page.getByLabel("Respuestas 1").fill("Madera, Metal");
-  await page.getByLabel("Precio desde (€)").fill("200");
-  await page.getByRole("button", { name: "Continuar", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: /Aún no tengo imágenes/ }),
-  ).toHaveClass(/active/);
+  await expect(page.getByLabel("Pregunta 1", { exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: /Continuar sin imágenes/ }).click();
   await page.screenshot({
     path: "artifacts/start-no-images.png",
     fullPage: true,
   });
-  await page.getByRole("button", { name: "Crear mi configurador" }).click();
+  await page
+    .getByRole("button", { name: "Crear mi ficha", exact: true })
+    .click();
+  await page.getByRole("button", { name: /Ahora, qué podrá elegir/ }).click();
+  await page.getByLabel("Precio base del producto (€)").fill("200");
   await expect(page.getByLabel("Nombre del producto")).toHaveValue(
     "Mi mesa a medida",
   );

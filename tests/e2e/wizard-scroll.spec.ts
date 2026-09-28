@@ -21,9 +21,7 @@ for (const viewport of [
       .click();
     const dialog = page.getByRole("dialog");
     const scroller = dialog.locator(".wizard-scroll");
-    await expect(page.getByLabel("Pregunta 1", { exact: true })).toHaveValue(
-      "Talla",
-    );
+    await expect(page.getByLabel("Pregunta 1", { exact: true })).toHaveCount(0);
     const before = await scroller.evaluate((e) => ({
       top: e.scrollTop,
       height: e.clientHeight,
@@ -39,21 +37,14 @@ for (const viewport of [
     await expect
       .poll(() => scroller.evaluate((e) => e.scrollTop))
       .toBeGreaterThan(0);
-    await expect(page.getByLabel("Precio desde (€)")).toBeInViewport();
-    const next = page.getByRole("button", { name: "Continuar", exact: true });
-    await expect(next).toBeInViewport();
+    const create = page.getByRole("button", {
+      name: "Abrir mi camiseta 3D",
+      exact: true,
+    });
+    await expect(create).toBeInViewport();
     await expect(
       dialog.getByRole("button", { name: "Cerrar", exact: true }),
     ).toBeInViewport();
-    await next.click();
-    await expect.poll(() => scroller.evaluate((e) => e.scrollTop)).toBe(0);
-    await page.mouse.move(
-      rect!.x + rect!.width - 20,
-      rect!.y + rect!.height / 2,
-    );
-    await page.mouse.wheel(0, 1800);
-    const create = page.getByRole("button", { name: "Crear mi configurador" });
-    await expect(create).toBeInViewport();
     await create.click();
     await expect(page).toHaveURL(/edit=/);
     expect(
