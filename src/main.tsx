@@ -160,7 +160,7 @@ function Model({ m, s, onPick }: any) {
     <div className="preview empty">Cargando visor 3D…</div>
   );
 }
-function Modal({ title, children, onClose }: any) {
+function Modal({ title, children, onClose, className = "" }: any) {
   return (
     <div
       className="overlay"
@@ -169,7 +169,7 @@ function Modal({ title, children, onClose }: any) {
       }}
     >
       <section
-        className="modal"
+        className={"modal " + className}
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -180,7 +180,11 @@ function Modal({ title, children, onClose }: any) {
             <X />
           </button>
         </header>
-        {children}
+        {className === "wizard-modal" ? (
+          <div className="wizard-scroll">{children}</div>
+        ) : (
+          children
+        )}
       </section>
     </div>
   );
@@ -673,6 +677,7 @@ function Studio({ run, notify, page }: any) {
       </div>
       {create && (
         <Modal
+          className="wizard-modal"
           title="Crea algo que tus clientes hagan suyo"
           onClose={() => setCreate(false)}
         >

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { industries, setupGroups } from "../core/industries.mjs";
 export default function Start({ create, templates }: any) {
+  const root = useRef<HTMLDivElement>(null);
   const draftKey =
     "yenze:start:" + (localStorage.getItem("workspace") || "current");
   const [saved] = useState<any>(() => {
@@ -91,6 +92,9 @@ export default function Start({ create, templates }: any) {
       setStorageFailed(true);
     }
   }, [name, type, questions, base, source, step, edited, draftKey]);
+  useEffect(() => {
+    root.current?.closest(".wizard-scroll")?.scrollTo({ top: 0 });
+  }, [step]);
   const setup = {
     name: name.trim(),
     basePrice: Math.round(Number(base) * 100),
@@ -119,7 +123,7 @@ export default function Start({ create, templates }: any) {
     )
     .filter((_, i) => more || search || i < 4);
   return (
-    <div className="start-wizard">
+    <div className="start-wizard" ref={root}>
       {(saved?.name || storageFailed) && (
         <p className="note" role="status">
           {storageFailed
